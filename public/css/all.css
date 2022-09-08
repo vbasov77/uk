@@ -1,0 +1,110 @@
+.carousel-inner img {
+    height: auto;
+    width: 90%;
+}
+
+/* Зависит от размера изображения */
+@media screen and (max-width: 640px) {
+    img.background {
+        left: 50%;
+        margin-left: -320px;
+    }
+    .carousel-inner img {
+        height: auto;
+        width: 100%;
+    }
+    .sto {
+        max-width: 100%;
+    }
+
+    .fro {
+        font-size: 50px;
+    }
+
+    .width-adaptive60 {
+        width: 100%;
+    }
+    iframe {
+        width: 100%;
+        height: auto;
+    }
+
+}
+
+@media (min-width: 320px){
+    .front .datepicker {
+        width: 100%;
+    }
+}
+.pt-4, .py-4 {
+    padding-top: 0rem !important;
+}
+
+.shadow-sm {
+    height: 45px;
+}
+
+.thumb {
+    height: 75px;
+    border: 1px solid #000;
+    margin: 10px 5px 0 0;
+}
+
+
+div.block_bg p {
+    color: white;
+    background: rgba(0, 0, 0, .2);
+    font-size: 150px;
+    margin: 0;
+
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    margin-right: -50%;
+    transform: translate(-50%, -50%)
+}
+
+.col-12.col-md-8.h-50 {
+    background: rgba(0, 0, 0, .3);
+}
+
+.file img {
+    max-width: 200px;
+    margin-bottom: 20px;
+    cursor: pointer;
+}
+
+.files img {
+    max-width: 200px;
+    margin-bottom: 20px;
+    cursor: pointer;
+}
+
+.preloader-img {
+    display: none;
+}
+
+.btn {
+    margin-bottom: 15px;
+    margin-top: 15px;
+}
+
+.card {
+    padding: 10px;
+    margin: 5px;
+
+}
+
+
+.navbar-collapse {
+    background-color: white;
+    z-index: 10;
+
+}
+
+li.nav-item {
+    margin-left: 10px;
+}
+input.tel {
+    margin-bottom: 15px;
+}
