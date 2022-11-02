@@ -5,6 +5,7 @@
 /public/storage
 /storage/*.key
 /vendor
+/resources/views/shablon.blade.php
 .env
 .env.backup
 .phpunit.result.cache

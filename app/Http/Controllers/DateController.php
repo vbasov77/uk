@@ -5,30 +5,36 @@ namespace App\Http\Controllers;
 use App\Models\Booking;
 use App\Models\Reports;
 use App\Models\Schedule;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 
 class DateController extends Controller
 {
 
     public static function setCountNightObj(array $date, int $room_id, int $sum, int $condition)
     {
-        // Изменение записи в базе reports, если таковой нет, то создание.
-        $in = date("m.Y", strtotime($date[0]));
-        $out = date("m.Y", strtotime($date[1]));
+        // Изменение записи в базе reports(отчёты), если таковой нет, то создание.
+        // Дата в БД имеет формат - 01.2022
+        // Сумма прибыли должна записываться в соответствии месяца. Поэтому, если бронирование захватывает два месяца,
+        // то разбиваем бронирование, достаём цену, суммируем и записываем в БД в соответствии месяца и id объекта
+
+        $in = date("m.Y", strtotime($date[0])); // изменили формат даты въезда с 25.09.2022 в 09.2022
+        $out = date("m.Y", strtotime($date[1]));// изменили формат даты выезда с 02.10.2022 в 10.2022
+
+        // Сравним месяцы, если они совпадают, то суммируем либо вычетаем сумму, в зависимости от заданного действия
+        // переданного в переменной $condition: 1 - прибавление, 2 - вычетание
         if ($in === $out) {
-            $month = $in;
-            $count_night = GetController::countNight($date[0], $date[1]);
-            $result = Reports::where('room_id', $room_id)->where('month', $month)->get();
+            $result = Reports::where('room_id', $room_id)->where('month', $in)->get();
             $data = [];
             if (!empty(count($result))) {
                 $data[] = $result[0]->count_night;
                 $data[] = $result[0]->sum;
             }
-            self::setReportInTable($data, $room_id, $count_night, $sum, $month, $condition);
+            $count_night = GetController::countNight($date[0], $date[1]); // получили количество ночей
+            self::setReportInTable($data, $room_id, $count_night, $sum, $in, $condition);
         } else {
             // Если даты захватывают два месяца, то разбиваем диапазон дат на два массива по каждому месяцу,
-            $end_date_first_arr = date('t', strtotime($date[0])) . "." . date('m.Y', strtotime($date[0]));// Получаем последнюю дату месяца 31.02.2022
+
+            // Получаем последнюю дату месяца 31.02.2022
+            $end_date_first_arr = date('t', strtotime($date[0])) . "." . date('m.Y', strtotime($date[0]));
             $fist_array = GetController::getDatesArray($date[0], $end_date_first_arr);// Получаем массив дат первого массива
             unset($fist_array[0]);
             if (count($fist_array)) {
@@ -49,7 +55,7 @@ class DateController extends Controller
                 self::setReportInTable($data, $room_id, $count_night_first, $sum_first, $month_first, $condition);
 
             }
-            // Получаем сумму второго массива
+            // Получаем сумму второго массива(второго месяца)
             $first_date_second_arr = "01." . date('m.Y', strtotime($date[1]));// Получаем первую  дату месяца 01.02.2022
             $second_array = GetController::getDatesArray($first_date_second_arr, $date[1]);// Получаем массив дат
             if (count($second_array)) {
@@ -73,7 +79,10 @@ class DateController extends Controller
 
     public static function setReportInTable(array $data, int $room_id, int $count_night, int $sum, string $month, $condition)
     {
-        //Массив $data должен состоять из двух элементов - количество ночей и суммы, если таковые имеются в BD.
+        // Изменение данных в БД в зависимости от переданного действия в переменной
+        // $condition. 1 - сложение, 2 - вычетание
+
+        // Массив $data должен состоять из двух элементов - количество ночей и суммы, если таковые имеются в BD.
         if (!empty(count($data))) {
             if ($condition == 1) {
                 $night = $data[0] + $count_night;
@@ -82,6 +91,7 @@ class DateController extends Controller
                 $night = $data[0] - $count_night;
                 $new_sum = $data[1] - $sum;
             }
+            // Изменение данных по id в БД reports
             Reports::where('room_id', $room_id)->where('month', $month)->update(
                 [
                     'count_night' => $night,
@@ -98,38 +108,19 @@ class DateController extends Controller
 
     }
 
-    public static function getDates(string $startTime, string $endTime)
+    public static function getDates(string $start_time, string $end_time)
     {
         // Получение массива дат в указанном диапазоне
         $day = 86400;
         $format = 'd.m.Y';
-        $startTime = strtotime($startTime);
-        $endTime = strtotime($endTime);
-        $numDays = round(($endTime - $startTime) / $day); // без +1
+        $start_time = strtotime($start_time);
+        $end_time = strtotime($end_time);
+        $num_days = round(($end_time - $start_time) / $day); // без +1
         $days = [];
-        for ($i = 1; $i < $numDays; $i++) {
-            $days[] = date($format, ($startTime + ($i * $day)));
+        for ($i = 1; $i < $num_days; $i++) {
+            $days[] = date($format, ($start_time + ($i * $day)));
         }
         return $days;
-    }
-
-    public static function checkDates()
-    {
-        Booking::all();
-    }
-
-    public static function plusCost($sum_night)
-    {
-        // Увеличение суммы в зависимости от количества ночей
-        if ($sum_night <= 1) {
-            $c = 840;
-        } elseif ($sum_night > 1 && $sum_night <= 3) {
-            $c = 340;
-        } elseif ($sum_night > 3 && $sum_night <= 5) {
-            $c = 140;
-        } else ($c = 0);
-        return $c;
-
     }
 
     public static function getBookingDatesId(int $room)
@@ -186,7 +177,7 @@ class DateController extends Controller
 
     public static function getBookingDates()
     {
-        // Получение всех забронированных дат
+        // Получение всех забронированных дат для отчета в админ панель
         $result = Booking::all();
         if (!empty($result)) {
             // Переформатирование date_book
@@ -235,22 +226,22 @@ class DateController extends Controller
             'no_in' => $no_in,
             'no_out' => $no_out,
         ];
-
         return $data;
     }
 
 
     public static function inOrder()
     {
-        $res = Booking::all();
-        if (!empty(count($res))) {
-            for ($i = 0; $i < count($res); $i++) {
-                $arr[] = strtotime($res[$i]->no_in);
+        // Формируем даты по порядку
+        $result = Booking::all();
+        if (!empty(count($result))) {
+            for ($i = 0; $i < count($result); $i++) {
+                $arr[] = strtotime($result[$i]->no_in);
             }
             sort($arr);
             foreach ($arr as $item) {
                 $ar = date('d.m.Y', $item);
-                foreach ($res as $value) {
+                foreach ($result as $value) {
                     if (strtotime($ar) == strtotime($value->no_in)) {
                         $array [] = $value;
                     }

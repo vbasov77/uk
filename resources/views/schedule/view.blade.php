@@ -1,6 +1,8 @@
 @extends('layouts.app')
 @section('content')
-   <center> <h1 style="margin-top: 25px">Все объекты</h1><br></center>
+
+
+    <center><h1 style="margin-top: 25px">Все объекты</h1><br></center>
     <section class="section text-center">
         <div class="container-fluid px-4 px-lg-5">
             <div class="row gx-4 gx-lg-5 justify-content-center">
@@ -15,15 +17,18 @@
                         </thead>
                         <tbody>
                         @foreach($rooms as $room)
-                            @php
-                                $ph = explode(',', $room->photo_room);
-                                $photo = $ph[0];
-                            @endphp
                             <tr>
                                 <th scope="row"> {{$room->id }} </th>
-                                <td><img src="{{ asset("images/$photo") }}" style="width: 80px; height: auto" alt="...">
+                                <td>
+                                    @if($room->path != null)
+                                        <img src="{{ asset("images/$room->path") }}" style="width: 80px; height: auto"
+                                             alt="...">
+                                    @else
+                                        <img src="{{ asset("images/no_image/no_image.jpg") }}"
+                                             style="width: 80px; height: auto" alt="...">
+                                    @endif
                                 </td>
-                                <td>{{$room->name_room}}</td>
+                                <td>{{$room->title}}</td>
                                 <td>
                                     <button class="btn btn-success btn-sm" style="color: white; margin-top: 25px"
                                             onclick="window.location.href = '{{route('schedule.add', ['id'=>$room->id])}}';">
@@ -44,6 +49,10 @@
                 @endif
             </div>
         </div>
+
+
+        <div id="calendar"></div>
+
     </section>
 
 

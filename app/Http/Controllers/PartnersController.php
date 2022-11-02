@@ -12,8 +12,9 @@ class PartnersController extends Controller
 {
     public function view(Request $request)
     {
-        $rooms = Rooms::where('user_id', $request->user()->id)->get();
-        $payment = Payment::where('user_id', $request->user()->id)->value('payment');
+        // Получение данных для отчёта партнёрам
+        $rooms = Rooms::where('user_id', $request->user()->id)->get();// Получили все объекты партнёра
+        $payment = Payment::where('user_id', $request->user()->id)->value('payment');// Получили выплаты для портнёров
         if(empty($payment)){
             $payment = 0;
         }

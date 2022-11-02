@@ -8,7 +8,7 @@
             <div class="row gx-4 gx-lg-5 justify-content-center">
                 <div class="col-lg-8">
                     <h2>{{$name_room}}</h2>
-                    <form action="{{route('add.schedule')}}" method="post">
+                    <form action="{{route('schedule.add')}}" method="post">
                         @csrf
                         <input type="hidden" name="room" value="{{$id}}">
                         <h3> Создать расписание </h3>

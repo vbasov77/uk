@@ -5,23 +5,34 @@
         <div class="container-fluid px-4 px-lg-5">
             <div class="row gx-4 gx-lg-5 justify-content-center">
                 <div class="col-lg-8">
+                    {{--                                                                Сообщения об ошибках--}}
+                    @if ($errors->any())
+                        <div class="alert alert-danger">
+                            <ul>
+                                @foreach ($errors->all() as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    @endif
+                    <br>
+
                     <h3>Редактировать номер</h3><br>
-                    <form
-                            id="form" {{--action="/room/<?= $data ['id']?>/edit" method="post" enctype="multipart/form-data"--}}>
-                        {{--<form id="form" action="{{route('room.edit', ['id'=>$data['id']])}}" method="post" enctype="multipart/form-data">--}}
+                    <form id="form">
                         @csrf
+                        <input type="hidden" name="id" value="{{$data['id']}}">
                         <div>
-                            <label for="name_room"><b>Номер (название):</b></label>
-                            <input name="name_room" type="text" value="{{$data['name_room'] ?? ''}}"
+                            <label for="title"><b>Заголовок:</b></label>
+                            <input name="title" type="text" value="{{$data['title'] ?? ''}}"
                                    class="form-control"
-                                   placeholder="№ 15" autocomplete="off" required>
+                                   placeholder="Заголовок" autocomplete="off" required>
                         </div>
                         <br>
                         <div>
                             <label for="address"><b>Адрес:</b></label>
                             <input name="address" type="text" value="{{$data['address'] ?? '' }}"
                                    class="form-control"
-                                   placeholder="Боровая 11" autocomplete="off" required>
+                                   placeholder="Адрес" autocomplete="off" required>
                         </div>
 
                         <div>
@@ -29,7 +40,7 @@
                             <input name="price" type="text" value="{{$data['price'] ?? '' }}"
                                    class="form-control"
                                    onkeypress="return (event.charCode >= 48 && event.charCode <= 57 && /^\d{0,3}$/.test(this.value));"
-                                   placeholder="1500" autocomplete="off" required>
+                                   placeholder="Цена" autocomplete="off" required>
                         </div>
                         <br>
                         <div>
@@ -44,7 +55,7 @@
                             <input name="capacity" type="text" value="{{ $data['capacity'] ?? '' }}"
                                    class="form-control"
                                    onkeypress="return (event.charCode >= 48 && event.charCode <= 57 && /^\d{0,3}$/.test(this.value));"
-                                   placeholder="3" autocomplete="off" required>
+                                   placeholder="Вместимость(человек)" autocomplete="off" required>
                         </div>
                         <br>
                         <div>
@@ -56,7 +67,7 @@
                         <br>
                         <div>
                             <label for="video"><b>Видео:</b></label>
-                            <input name="video" type="text" value="{{ $data['video'] ?? '' }}"
+                            <input name="video" type="text" value="{{ $video ?? '' }}"
                                    class="form-control"
                                    placeholder="https://www.youtube.com/embed/WviGn7gjhdw" autocomplete="off">
                         </div>
@@ -65,7 +76,7 @@
                             <label for="coordinates"><b>Координаты:</b></label>
                             <input name="coordinates" type="text" value="{{ $data['coordinates'] ?? '' }}"
                                    class="form-control"
-                                   placeholder="" autocomplete="off"
+                                   placeholder="Координаты" autocomplete="off"
                                    required>
                         </div>
                         <br>
@@ -83,10 +94,10 @@
                         <div class="preview"></div>
                         <div class="files" id="files"></div>
                         <div class="file" id="file">
-                            @if (!empty($rooms))
-                                @foreach ($rooms as $result)
-                                    <img class="img-thumbnail del" src="{{ asset("images/$result") }}/" alt=""
-                                         data-file="{{$result}}">
+                            @if (!empty($images))
+                                @foreach ($images as $item)
+                                    <img class="img-thumbnail del" src="{{ asset("images/$item") }}/" alt=""
+                                         data-file="{{$item}}">
                                 @endforeach
                             @endif
                         </div>
@@ -105,6 +116,9 @@
         @push('scripts')
             <script src="{{ asset('dropzone/dropzone.min.js') }}" defer></script>
             <link href="{{ asset('dropzone/dropzone.min.css') }}" rel="stylesheet">
+            <script>
+                var id = @json($data->id);
+            </script>
             <script src="{{ asset('dropzone/drop.js') }}" defer></script>
         @endpush
 

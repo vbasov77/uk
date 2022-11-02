@@ -78,6 +78,7 @@ div.block_bg p {
     max-width: 200px;
     margin-bottom: 20px;
     cursor: pointer;
+    margin: 5px;
 }
 
 .preloader-img {

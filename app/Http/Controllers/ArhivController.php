@@ -18,24 +18,26 @@ class ArhivController extends Controller
     }
 
 
-    public function inArchive()
+    public function inArchive(Request $request)
     {
-        $result = Booking::where('id', $_POST['id'])->get();
+        // Переносим бронирование в архив
+
+        $result = Booking::where('id', $request->id)->first();// Получили данные бронирования по id для переноса в архив
         $data = [
-            'name_user' => $result[0]-> name_user,
-            'phone_user' => $result[0]-> phone_user,
-            'email_user' => $result[0]-> email_user,
-            'no_in' => $result[0]-> no_in,
-            'no_out' => $result[0]-> no_out,
-            'user_info' => $result[0]-> user_info,
-            'summ' => $result[0]-> summ,
-            'pay' => $result[0]-> pay,
-            'info_pay' => $result[0]-> info_pay,
-            'confirmed' => $result[0]-> confirmed,
-            'otz' => $_POST['otz']
+            'name_user' => $result->name_user,
+            'phone_user' => $result->phone_user,
+            'email_user' => $result->email_user,
+            'no_in' => $result->no_in,
+            'no_out' => $result->no_out,
+            'user_info' => $result->user_info,
+            'summ' => $result->summ,
+            'pay' => $result->pay,
+            'info_pay' => $result->info_pay,
+            'confirmed' => $result->confirmed,
+            'otz' => $request->otz
         ];
-        Archive::insert($data);
-        Booking::where('id', $_POST['id'])-> delete();
+        Archive::insert($data); // Добавили в архив
+        Booking::where('id', $request->id)->delete(); // Удалили из базы данных бронирования
         return redirect()->action('OrdersController@view');
     }
 

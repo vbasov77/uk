@@ -2,147 +2,125 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Images;
 use App\Models\Rooms;
 use App\Models\Settings;
+use App\Models\Video;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\File;
-use Illuminate\Support\Facades\Session;
-use Illuminate\Support\Facades\Storage;
-use phpDocumentor\Reflection\DocBlock\Tags\Var_;
+
 
 class RoomsController extends Controller
 {
-    public function view(int $id)
+    public function view(Request $request)
     {
-        $data = Rooms::find($id);
-        $photo = explode(',', $data->photo_room);
-        $role = Auth::user()->role;
-        $date_b = DateController::getBookingDatesId($id);
+        // Получение данных для отображения объекта
+        $data = Rooms::find($request->id);// Получили данные по id объекта из БД rooms
+        $photo = GetController::getImages($request->id);// Получили пути на фото
+
+        // Получим все забронированные даты для отображения в календаре
+        $date_b = DateController::getBookingDatesId($request->id);
+        // Получим правила для календаря. Правила для календаря - строка вида 1&2&25.
+        // Преобразуем её в массив по делиметру - &
+        // 0 => Старт бронирования - 1 сегодня, 2 - завтра
+        // 1 => Минимальное количество дней
+        // 2 => Максимальное количество дней
         $res = Settings::get('rule');
         $rules = explode('&', $res [0]->rule);
         if (!empty($rules['2']) && $rules['2'] == 1) {
-            $start = date("Y-m-d");
+            $start = date("Y-m-d"); // Сегодняшняя дата
         } else {
             $d = strtotime("+1 day");
-            $start = date("Y-m-d", $d);
+            $start = date("Y-m-d", $d); // автрашняя дата
         }
-        return view('rooms.view', ['start' => $start, 'data' => $data, 'photo' => $photo, 'role' => $role, 'date_book' => $date_b ['date_book'], 'rules' => $rules]);
-    }
-
-    public function viewAdd()
-    {
-        return view('rooms.view_add');
-    }
-
-    public function viewEdit(Request $request, $id)
-    {
-        $result = Rooms::find($id);
-        $photo_room = $result->photo_room;
-        $arr_sess = \session('file');
-        $rooms = false;
-        if (!empty($photo_room) == null && !empty($arr_sess)) {
-            foreach ($arr_sess as $arr_s) {
-                Session::put('file', array_diff(Session::get('file'), [$arr_s]));
-            }
-            $rooms = false;
-        }
-        if (!empty($photo_room) == null && empty($arr_sess)) {
-            $rooms = false;
-        }
-        if (!empty($photo_room) != null && !empty($arr_sess)) {
-            $a = explode(',', $photo_room);
-            foreach ($arr_sess as $arr_s) {
-                Session::put('file', array_diff(Session::get('file'), [$arr_s]));
-            }
-            foreach ($a as $value) {
-                $request->session()->push('file', $value);
-            }
-            $rooms = \session('file');
-        }
-
-        if (!empty($photo_room) != null && empty($arr_sess)) {
-            $a = explode(',', $photo_room);
-            foreach ($a as $value) {
-                $request->session()->push('file', $value);
-            }
-            $rooms = \session('file');
-        }
-        $request->session()->put('id', (int)$id);
-        $request->session()->save();
-        return view('/rooms/view_edit', ['data' => $result, 'rooms' => $rooms]);
+        $video = GetController::getPathVideoRoom($request->id); // Получили ссылку на видео объекта
+        return view('rooms.view', ['video' => $video, 'start' => $start, 'data' => $data, 'photo' => $photo, 'date_book' => $date_b ['date_book'], 'rules' => $rules]);
     }
 
     public function editRoom(Request $request)
     {
-        if (!empty(session('file'))) {
-            $res = implode(',', session('file'));
-            Rooms::where('id', \session('id'))->update([
-                'name_room' => $_POST['name_room'],
-                'user_id' => $_POST['user_id'],
-                'address' => $_POST['address'],
-                'price' => $_POST['price'],
-                'text_room' => $_POST['text_room'],
-                'capacity' => $_POST['capacity'],
-                'service' => $_POST['service'],
-                'video' => $_POST['video'],
-                'photo_room' => $res,
-                'coordinates' => $_POST['coordinates'],
-            ]);
-            $res = ['answer' => 'ok'];
-        } else {
-            $res = $res = ['answer' => 'error'];
+        // этот код выполнится, если используется метод GET
+        if ($request->isMethod('get')) {
+            // Получение данных для редактирования объекта
+            $room = Rooms::where('id', $request->id)->get();
+            $photo_room = Images::where('room_id', $request->id)->get();
+            $images = null;
+            if (!empty(count($photo_room))) {
+                foreach ($photo_room as $value) {
+                    $images[] = $value->path;
+                }
+            }
+            $video = GetController::getPathVideoRoom($request->id);// Получили ссылку на видео объекта
+            return view('rooms.view_edit', ['video' => $video, 'data' => $room[0], 'images' => $images]);
         }
-        exit(json_encode($res));
-    }
 
-
-    public function getCost()
-    {
-        $date_u = preg_replace("/\s+/", "", $_POST['date_book']);// удалили пробелы
-        $date_u = explode("-", $date_u);
-        $d = DbController::GetScheduleTable();
-        $arr_date = DateController::getDates($date_u[0], $date_u[1]);
-        $dat = [];
-        $dat[] = $date_u[0];
-        $cost = [];
-        foreach ($arr_date as $value) {
-            $dat [] = $value;
-        }
-        $date_view = [];
-        foreach ($d as $item) {
-            $str_arr = $item['date_book'];
-            if (!empty(in_array($str_arr, $dat)) && $item['room'] === $_POST['room']) { // проверка есть ли в массиве
-                $cumm_cost = $item['cost'];
-                $date_view[] = $item ['date_book'] . "/" . $cumm_cost;
-                $cost[] = $item['cost'];
+        // этот код выполнится, если используется метод POST
+        if ($request->isMethod('post')) {
+            // Изменение (редактирование) данных объекта в БД при использовании Ajax
+            if (!empty($request->id)) {
+                // Изменяем данные объекта в БВ по ID
+                Rooms::where('id', $request->id)->update([
+                    'address' => $request->address,
+                    'price' => $request->price,
+                    'title' => $request->title,
+                    'text_room' => $request->text_room,
+                    'capacity' => $request->capacity,
+                    'service' => $request->service,
+                ]);
+                // Если указана ссылка на видео, то либо изменяем запись в БД, либо создаём
+                if ($request->video !== '') {
+                    // Проверяем на существовании видео объекта
+                    $video = Video::where('room_id', $request->id)->get();
+                    if (!empty(count($video))) {
+                        Video::where('room_id', $request->id)->update(['path' => $request->video]);
+                    } else {
+                        Video::insert([
+                            'room_id' => $request->id,
+                            'path' => $request->video
+                        ]);
+                    }
+                }
+                $res = ['answer' => 'ok'];
+            } else {
+                $res = ['answer' => 'error'];
             }
         }
-        $dates = implode(',', $date_view);
-        $sum = array_sum($cost);
-        $nights = count($date_view);
-        $res = ['answer' => 'ok', 'date_book' => $dates, 'summ' => $sum, 'nigh' => $nights /*, 'dates' => implode(',', $date_view), 'summ' => $sum*/];
         exit(json_encode($res));
     }
 
-
-    public function addRoom()
+    public function addRoom(Request $request)
     {
-        if (!empty($_POST)) {
-            $id = Rooms::insertGetId([
-                'name_room' => $_POST['name_room'],
-                'user_id' => $_POST['user_id'],
-                'address' => $_POST['address'],
-                'price' => $_POST['price'],
-                'text_room' => $_POST['text_room'],
-                'capacity' => $_POST['capacity'],
-                'service' => $_POST['service'],
-                'video' => $_POST['video'],
-                'coordinates' => $_POST['coordinates'],
+        // этот код выполнится, если используется метод GET
+        if ($request->isMethod('get')) {
+            return view('rooms.view_add');
+        }
 
-            ]);
-            return redirect()->action('RoomsController@viewEdit', ['id' => $id]);
+        // этот код выполнится, если используется метод POST
+        if ($request->isMethod('post')) {
+            // Добавление нового объекта в БД
+            if (!empty($request->user_id)) {
+                // Проверка обязательных полей
+                $request->validate([
+                    'name_room' => 'required|max:255',
+                    'address' => 'required',
+                    'price' => 'required',
+                    'text_room' => 'required',
+
+                ]);
+                // Запись данных в БД
+                $id = Rooms::insertGetId([
+                    'name_room' => $request->name_room,
+                    'user_id' => $request->user_id,
+                    'address' => $request->address,
+                    'price' => $request->price,
+                    'text_room' => $request->text_room,
+                    'capacity' => $request->capacity,
+                    'service' => $request->service,
+                    'video' => $request->video,
+                    'coordinates' => $request->coordinates,
+
+                ]);
+                return redirect()->action('RoomsController@viewEdit', ['id' => $id]);
+            }
         }
     }
 

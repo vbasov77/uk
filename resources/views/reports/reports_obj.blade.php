@@ -61,9 +61,6 @@ $confirm = "<button class='btn btn-outline-danger btn-sm'
         <div class="container px-4 px-lg-5">
             <div class="row gx-4 gx-lg-5 justify-content-center">
                 <div class="col-lg-8">
-                    @php
-                            @endphp
-
                     <div style="margin-top: 50px">
                         <h1>Отчёт</h1>
                         <h3>{{$data->address}}</h3>

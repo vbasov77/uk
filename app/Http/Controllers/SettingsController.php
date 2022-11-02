@@ -22,7 +22,7 @@ class SettingsController extends Controller
 
     public function front(Request $request)
     {
-        if (!empty($_POST)) {
+        if ($request->isMethod('post')) {
             if (!empty($request->file('file'))) {
                 //Загрузка фото
                 $image = $request->file('file');
@@ -32,11 +32,11 @@ class SettingsController extends Controller
                 $image->move(public_path('img/bg_image'), $filename);
                 $data = [];
                 for ($i = 0; $i < 3; $i++) {
-                    $data[] = $_POST ['data'] [$i];
+                    $data[] = $request->data [$i];
                 }
                 $data[] = $filename;
                 $front_str = implode('&', $data);
-                DB::table('settings')->where('id', 1)->update(['front' => $front_str]);
+                Settings::where('id', 1)->update(['front' => $front_str]);
                 $message = 'Настройки сохранены';
                 return redirect()->action('SettingsController@view', ['message' => $message]);
             } else {
@@ -46,7 +46,8 @@ class SettingsController extends Controller
                 return redirect()->action('SettingsController@view', ['message' => $message]);
             }
 
-        } else {
+        }
+        if ($request->isMethod('get')) {
             $res = Settings::where('id', 1)->value('front');
             $data = explode('&', $res);
             return view('settings/front_settings', ['data' => $data]);

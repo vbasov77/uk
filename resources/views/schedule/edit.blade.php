@@ -5,7 +5,7 @@
             <div class="row gx-4 gx-lg-5 justify-content-center">
                 <div class="col-lg-8">
                     <h2>{{$name_room}}</h2>
-                    <form action="{{route('edit.schedule')}}" method="post">
+                    <form action="{{route('schedule.edit')}}" method="post">
                         @csrf
                         <input type="hidden" name="room" value="{{$id}}">
                         <h3> Изменить расписание </h3>
@@ -31,7 +31,6 @@
             <script src="{{ asset('js/fecha.min.js') }}" defer></script>
             <link href="{{ asset('css/hotel-datepicker.css') }}" rel="stylesheet">
             <script src="{{ asset('js/hotel-datepicker.min.js') }}" defer></script>
-
             <script src="{{ asset('js/calendars/schedule_cal2.js') }}" defer></script>
         @endpush
 

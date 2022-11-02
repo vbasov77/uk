@@ -46,7 +46,7 @@
                                                                           width="100px" height="auto"></p>
                             <div class="card-footer">
                                 <button class="btn btn-outline-success"
-                                        onclick="window.location.href = '{{route('front_settings')}}';">Редактировать
+                                        onclick="window.location.href = '{{route('front.edit')}}';">Редактировать
                                 </button>
                             </div>
 

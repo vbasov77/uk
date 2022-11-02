@@ -61,16 +61,13 @@
         <div class="container-fluid px-4 px-lg-5">
             <div class="row gx-4 gx-lg-5 justify-content-center">
                 @foreach($data as $value)
-                    <?php
-                    if (!empty($value['photo_room'])) {
-                        $p = explode(',', $value ['photo_room']);
-                        $photo = $p[0];
-                    } else {
-                        $photo = "no_image/no_image.jpg";
-                    }
-                    ?>
                     <div class="card" style="width: 18rem;">
-                        <img src="{{ asset("images/$photo") }}" class="card-img-top" alt="...">
+                        @if($value->path != null)
+                            <img src="{{ asset("images/$value->path") }}" class="card-img-top"
+                                 alt="...">
+                        @else
+                            <img src="{{ asset("images/no_image/no_image.jpg") }}" class="card-img-top" alt="...">
+                        @endif
                         <div class="card-body">
                             <div style="float: left; opacity: .6; ">
                                 @for($i = 0; $i < $value ['capacity']; $i++)
@@ -155,7 +152,7 @@
 
                 // Добавление метки
                 // https://tech.yandex.ru/maps/doc/jsapi/2.1/ref/reference/Placemark-docpage/
-                        @foreach($objects as $obj)
+                        @foreach($data as $obj)
 
                 var myPlacemark = new ymaps.Placemark([{{$obj['coordinates']}}], {
                         // Хинт показывается при наведении мышкой на иконку метки.

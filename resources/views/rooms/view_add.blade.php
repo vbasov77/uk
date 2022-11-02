@@ -5,54 +5,64 @@
         <div class="container px-4 px-lg-5">
             <div class="row gx-4 gx-lg-5 justify-content-center">
                 <div class="col-lg-8">
+                    @if ($errors->any())
+                        <div class="alert alert-danger">
+                            <ul>
+                                @foreach ($errors->all() as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    @endif
+                    <br>
                     <h3>Создать номер</h3><br>
                     <form
-                            id="form" action="{{route('add.room')}}" method="post">
+                            id="form" action="{{route('room')}}" method="post">
                         @csrf
                         <div>
                             <label for="name_room"><b>Номер (название):</b></label>
-                            <input name="name_room" type="text" value="{{$_POST['name_room'] ?? ''}}"
+                            <input name="name_room" type="text" value="{{ old('name_room') }}"
                                    class="form-control"
-                                   placeholder="№ 13" autocomplete="off" required>
+                                   placeholder="Номер (название)" autocomplete="off" required>
                         </div>
                         <br>
                         <div>
                             <label for="address"><b>Адрес:</b></label>
-                            <input name="address" type="text" value="{{$_POST['address'] ?? '' }}"
+                            <input name="address" type="text" value="{{ old('address') }}"
                                    class="form-control"
-                                   placeholder="Боровая 11" autocomplete="off" required>
+                                   placeholder="Адрес" autocomplete="off" required>
                         </div>
                         <br>
                         <div>
                             <label for="price"><b>Цена:</b></label>
-                            <input name="price" type="text" value="{{$_POST['price'] ?? '' }}"
+                            <input name="price" type="text" value="{{ old('price') }}"
                                    class="form-control"
-                                   placeholder="1500" autocomplete="off" required>
+                                   placeholder="Цена" autocomplete="off" required>
                         </div>
                         <br>
                         <div>
                             <label for="text_room"><b>Текст:</b></label>
-                            <textarea placeholder="Введите текст" name="text_room" cols="85" rows="5"
-                                      value="{{$_POST['text_room'] ?? '' }}" class="form-control"></textarea>
+                            <textarea placeholder="Введите текст..." name="text_room" cols="85" rows="5"
+                                      value="{{ old('text_room') }}" class="form-control"></textarea>
                         </div>
                         <br>
                         <div>
                             <label for="capacity"><b>Вместимость(человек):</b></label>
-                            <input name="capacity" type="text" value="{{ $data['capacity'] ?? '' }}"
+                            <input name="capacity" type="text" value="{{ old('capacity') }}"
                                    class="form-control"
-                                   placeholder="3" autocomplete="off" required>
+                                   placeholder="Вместимость(человек)" autocomplete="off" required>
                         </div>
                         <br>
                         <div>
                             <label for="service"><b>Сервис:</b></label>
-                            <input name="service" type="text" value="{{$data['service'] ?? '' }}"
+                            <input name="service" type="text" value="{{ old('service') }}"
                                    class="form-control"
                                    placeholder="фен, утюг, телевизор, холодильник..." autocomplete="off" required>
                         </div>
                         <br>
                         <div>
                             <label for="video"><b>Видео YouTube:</b></label>
-                            <input name="video" type="text" value="{{ $data['video'] ?? '' }}"
+                            <input name="video" type="text" value="{{ old('video') }}"
                                    class="form-control"
                                    placeholder="https://www.youtube.com/watch?v=WviGn7gjhdw" autocomplete="off"
                                    required>
@@ -60,16 +70,16 @@
                         <br>
                         <div>
                             <label for="coordinates"><b>Координаты:</b></label>
-                            <input name="coordinates" type="text" value="{{ $data['coordinates'] ?? '' }}"
+                            <input name="coordinates" type="text" value="{{ old('coordinates') }}"
                                    class="form-control"
-                                   placeholder="" autocomplete="off">
+                                   placeholder="Координаты" autocomplete="off">
                         </div>
                         <br>
                         <div>
                             <label for="user_id"><b>Присвоить юзеру ID:</b></label>
-                            <input name="user_id" type="number" value="{{$_POST['user_id'] ?? '' }}"
+                            <input name="user_id" type="number" value="{{ old('user_id') }}"
                                    class="form-control"
-                                   placeholder="1" autocomplete="off" required>
+                                   placeholder="ID" autocomplete="off" required>
                         </div>
                         <br>
                         <button class="btn btn-primary submit" id="submit" type="submit">Перейти дальше</button>

@@ -1,12 +1,6 @@
 @extends('layouts.app')
 @section('content')
 
-    {{--    <style>--}}
-    {{--        input.tel {--}}
-    {{--            margin-bottom: 15px;--}}
-    {{--        }--}}
-    {{--    </style>--}}
-
     <section class="about-section text-center" id="about">
         <div class="container px-4 px-lg-5">
             <div class="row gx-4 gx-lg-5 justify-content-center">
@@ -39,14 +33,14 @@
                         <div>
                             <label for="phone_user"><b>Телефон:</b></label><br>
                             <input name="phone_user" type="text" class="tel form-control"
-                                   value="{{$_POST['phone_user'] ?? ''}}" placeholder="+7(000) 000-0000" required>
+                                   value="{{ old('phone_user') }}" placeholder="+7(000) 000-0000" required>
                         </div>
                         <br>
                         <div>
                             <label for="email_user"><b>Email:</b></label>
                             <input name="email_user" type="email" class="form-control"
                                    onKeypress="javascript:if(event.keyCode == 32)event.returnValue = false;"
-                                   value="{{$_POST['email_user'] ?? '' }}" placeholder="Email" required>
+                                   value="{{ old('email_user') }}" placeholder="Email" required>
                         </div>
                         <br>
                         @for ($i = 1; $i <= $data['guests']; $i++)
@@ -54,16 +48,16 @@
                             <div>
                                 <label for="ФИО"><b>ФИО:</b></label>
                                 <input name="name_user[]" id="name_user" type="text" class="form-control"
-                                       value="{{$_POST['name_user'] ?? ''}}" placeholder="ФИО" required>
+                                       value="{{ old('name_user') }}" placeholder="ФИО" required>
                             </div>
                             <div>
                                 <label for="age"><b>Возраст:</b></label>
                                 <input name="age[]" type="text" class="form-control"
-                                       value="{{ $_POST['age'] ?? ''}}" placeholder="Полных лет" required>
+                                       value="{{ old('age') }}" placeholder="Полных лет" required>
                             </div>
                             <div>
-                                <label for="nationality"><b>Район:</b></label>
-                                <input name="nationality[]" type="text" class="form-control"
+                                <label for="from"><b>Район:</b></label>
+                                <input name="from[]" type="text" class="form-control"
                                        placeholder="Город, область жительства" required>
                             </div>
                             <br>

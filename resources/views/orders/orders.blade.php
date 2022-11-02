@@ -5,12 +5,7 @@
         <div class="container px-4 px-lg-5">
             <div class="row gx-4 gx-lg-5 justify-content-center text-center">
                 <div class="col-lg-8">
-                    <h3>Бронь</h3>
-                    <div>
-                        <input id="input-id" name="date_book" type="text"
-                               class="form-control"
-                               placeholder="Нажмите для выбора даты" autocomplete="off" readonly="readonly">
-                    </div>
+                    <h3 style="margin-top: 25px">Бронь</h3>
                     <br>
                     @if (!empty($data))
                         @for($i = 0; $i < count($data); $i++)
@@ -103,13 +98,6 @@
         </div>
     </section>
     @push('scripts')
-        <script src="{{ asset('js/fecha.min.js') }}" defer></script>
-        <link href="{{ asset('css/hotel-datepicker.css') }}" rel="stylesheet">
-        <script src="{{ asset('js/hotel-datepicker.min.js') }}" defer></script>
-        <script>
-            var datebook = @json($data2 ['date_book']);
-        </script>
-        <script src="{{ asset('js/calendars/schedule_cal.js') }}" defer></script>
         <script src="{{ asset('js/otz/otz.js') }}" defer></script>
     @endpush
 

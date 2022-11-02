@@ -11,27 +11,34 @@
                     <div class="col-xl-8">
                         <div id="carusel" class="carousel slide" data-ride="carousel">
                             <ul class="carousel-indicators">
-                                @for ($s = 0; $s < count($photo); $s++)
-                                    @php
-                                        if ($s == 0){
-                                             $active = "active";
-                                        } else {$active = "";}
-                                    @endphp
-                                    <li data-target="#carusel" data-slide-to="{{$s}}" class="{{$active}}"></li>
-                                @endfor
+                                @if(!empty($photo))
+                                    @for ($s = 0; $s < count($photo); $s++)
+                                        @php
+                                            if ($s == 0){
+                                                 $active = "active";
+                                            } else {$active = "";}
+                                        @endphp
+                                        <li data-target="#carusel" data-slide-to="{{$s}}" class="{{$active}}"></li>
+                                    @endfor
+                                @endif
                             </ul>
                             <div class="carousel-inner">
-                                @for ($i = 0; $i < count($photo); $i++)
-                                    @php
-                                        if ($i == 0){
-                                            $carusel = "carousel-item active";
-                                             } else {$carusel = "carousel-item";}
-                                    @endphp
-                                    <div class="{{$carusel}}">
-                                        <img src="{{ asset('images/' . $photo[$i])}}" alt="">
-                                    </div>
 
-                                @endfor
+                                @if(!empty($photo))
+                                    @for ($i = 0; $i < count($photo); $i++)
+                                        @php
+                                            if ($i == 0){
+                                                $carusel = "carousel-item active";
+                                                 } else {$carusel = "carousel-item";}
+                                        @endphp
+                                        <div class="{{$carusel}}">
+                                            <img src="{{ asset('images/' . $photo[$i])}}" alt="">
+                                        </div>
+
+                                    @endfor
+                                @else
+                                    <img src="{{ asset('images/no_image/no_image.jpg')}}" alt="">
+                                @endif
                                 <a class="carousel-control-prev" href="#carusel" data-slide="prev">
                                     <span class="carousel-control-prev-icon"></span>
                                 </a>
@@ -68,9 +75,9 @@
                 <div class="row">
                     <div class="col-lg-6">
                         <h3 style="padding: 15px">Забронировать</h3>
-                        <form action="/add_calendar" method="post">
+                        <form action="{{route('add.calendar')}}" method="post">
                             @csrf
-                            <input type="hidden" name="id" value="<?=$data['id']?>">
+                            <input type="hidden" name="id" value="{{$data['id']}}">
                             <label for="date_book"><b>Выберете дату:</b></label>
                             <div>
                                 <input id="input-id" style="margin-bottom: 15px; text-align: center "
@@ -104,7 +111,7 @@
                         <h3 style="padding: 15px">Подробнее</h3>
 
                         <div style="font-size: 18px">
-                            {{$data->text_room}}
+                            {!!  $data->text_room !!}
                         </div>
                     </div>
                 </div>
@@ -113,9 +120,9 @@
                 <br>
                 <div class="row justify-content-center text-center">
                     <div class="col-12">
-                        @if (!empty($data->video))
+                        @if (!empty($video))
                             <div>
-                                <iframe width="560" height="315" src="{{$data->video}}" title="YouTube video player"
+                                <iframe width="560" height="315" src="{{$video}}" title="YouTube video player"
                                         frameborder="0"
                                         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                                         allowfullscreen></iframe>
@@ -135,10 +142,10 @@
     </section>
     <section>
         <div class="row justify-content-center text-center">
-            @if($role == 1)
+            @if(Auth::user()->isAdmin())
                 <div>
                     <button class="btn btn-success btn-sm" style="color: white; margin-top: 25px"
-                            onclick="window.location.href = '{{route('room.edit', ['id'=>$data->id])}}'">
+                            onclick="window.location.href = '{{route('edit.room', ['id'=>$data->id])}}'">
                         Редактировать номер
                     </button>
                 </div>
@@ -202,11 +209,11 @@
 
 
                 var myPlacemark = new ymaps.Placemark([{{$data-> coordinates}}], {
-                        // Хинт показывается при наведении мышкой на иконку метки.
-                        hintContent: 'Содержимое всплывающей подсказки',
-                        // Балун откроется при клике по метке.
-                        balloonContent: '<center><div>{{$data-> address}}<br>{{$data-> price}}<br></div></center>'
-                    });
+                    // Хинт показывается при наведении мышкой на иконку метки.
+                    hintContent: 'Содержимое всплывающей подсказки',
+                    // Балун откроется при клике по метке.
+                    balloonContent: '<center><div>{{$data-> address}}<br>{{$data-> price}}<br></div></center>'
+                });
 
                 // После того как метка была создана, добавляем её на карту.
                 myMap.geoObjects.add(myPlacemark);

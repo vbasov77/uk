@@ -2,193 +2,171 @@
 
 namespace App\Http\Controllers;
 
-use App\Exceptions\InvalidArgumentException;
 use App\Mail\NewBooking;
 use App\Mail\SendBooking;
-use App\Mail\SendRegister;
 use App\Models\Booking;
 use App\Models\Schedule;
-use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Facades\Route;
+
 
 class CalendarController extends Controller
 {
-    public function view(Request $request)
+    public function addBooking(Request $request)
     {
-        if (!empty(session('date_book'))) {
-            $request->session()->forget('date_book');
-            $request->session()->save();
-        }
-        if (!empty(session('people'))) {
-            $request->session()->forget('people');
-            $request->session()->save();
-
-        }
-
-        $d = DB::table('rooms')->get();
-        $data = json_decode(json_encode($d), true);
-
-        $f = DB::table('settings')->find(1);
-        $fr = json_decode(json_encode($f), true);
-        $front = explode(',', $fr['front']);
-
-        $r = DB::table('settings')->get('rule');
-        $res = json_decode(json_encode($r), true);
-        $rules = explode('&', $res [0]['rule']);
-        if (!empty($rules['2']) && $rules ['2'] == 1) {
-            $start = date("Y-m-d");
-        } else {
-            $d = strtotime("+1 day");
-            $start = date("Y-m-d", $d);
-        }
-        return view('front')->with(['data' => $data, 'front' => $front, 'rules' => $rules, 'start' => $start]);
-
-    }
-
-
-    public function addBooking()
-    {
-
         //Проверка на занятость дат
-        $check = explode(',', $_POST['date_view']);
+        // Если за время бронирования, даты уже кто-то занял, или исключить повторного бронирования,
+        // сообщаем юзеру о недопустимости
+        $check = explode(',', $request->date_view); // Получаем массив выбранных юзером дат из строки инфы
         for ($i = 0; $i < count($check) - 1; $i++) {
+            // Разбиваем массив инфы типа 0 => 31.10.2022/1300
+            // на массив только с датами 0 => 31.10.2022
             $it = explode('/', $check[$i]);
-            $array_dates[] = $it[0];
+            $user_dates[] = $it[0];
         }
-        $all_dates = Booking::where('room', $_POST['id'])->get('date_book');
+
+        // Получим массив всех занятых дат объекта по id
+        $all_dates = Booking::where('room', $request->id)->get('date_book');
+
+        //Если имеются забронированные даты объекта, то сравниваем эти даты с выбранными датами юзера
         if (!empty(count($all_dates))) {
-            foreach ($all_dates as $da) {
-                $array_table[] = $da->date_book;
+            foreach ($all_dates as $value) {
+                // Формируем многомерный массив всех занятых дат
+                $tab = explode(',', $value->date_book);
+                $array_dates[] = $tab;
             }
-            if (!empty(count($array_dates))) {
-                foreach ($array_dates as $ar) {
-                    foreach ($array_table as $table) {
-                        $tab = explode(',', $table);
-                        if (in_array($ar, $tab)) {
-                            return redirect()->action('CalendarController@comeErrorBlade');
-                        }
-                    }
+
+            // Переобразуем многомерный массив всех занятых дат объекта в численный
+            $array_dates = Arr::collapse($array_dates);
+
+            // Если одна из дат юзера присутствует в массиве всех занятых дат объекта, сообщаем о недопустимости
+            foreach ($user_dates as $value) {
+                if (in_array($value, $array_dates)) {
+                    return redirect()->action('CalendarController@comeErrorBlade');
                 }
+
             }
+
         }
         // Конец проверки
-        $user = explode(",", preg_replace('/\s+?\'\s+?/', '\'', $_POST ['more_book'] [0]));
-        $name_user = $user[0];
-        $user_info = implode(';', $_POST['more_book']);
-        $users = User::get();
-        $users_email = [];
-        foreach ($users as $value) {
-            $users_email [] = $value->email;
-        }
-        $email = preg_replace("/\s+/", "", $_POST['email_user']);
-        if (empty(in_array($email, $users_email))) {
-            $permitted_chars = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
-            $password = substr(str_shuffle($permitted_chars), 0, 16);
-            User::insert([
-                'name' => $name_user,
-                'email' => $_POST ['email_user'],
-                'password' => Hash::make($password),
-            ]);
-            $params = [
-                'name_user' => $name_user,
-                'email_user' => $_POST ['email_user'],
-                'password' => $password,
-            ];
-            $subject2 = 'Регистрация на сайте';
-            $toEmail2 = $_POST['email_user'];
-            Mail::to($toEmail2)->send(new SendRegister($subject2, $params));
-        }
-        $code = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
-        $code_book = substr(str_shuffle($code), 0, 16);
-        $d = $_POST ['date_book'];
-        $d = preg_replace("/\s+/", "", $d);// удалили пробелы
-        $dd = explode("-", $d);                           // преобразовали в массив
-        $condition = 1;                                            // 1 - прибавить, 2 - вычесть
-        DateController::setCountNightObj($dd, $_POST['id'], $_POST['sum'], $condition);
-        $startTime = $dd[0];
-        $endTime = $dd[1];
-        $date_b = DateController::getDates($startTime, $endTime);
-        $date_book = implode(',', $date_b);
 
-        Booking::insert([
-                'room' => $_POST['id'],
-                'code_book' => $code_book,
+        // Вытаскиваем имя юзера из строки
+        $user_info = implode(';', $request->more_book);
+        $user = explode(",", preg_replace('/\s+?\'\s+?/', '\'', $user_info));
+        $name_user = $user[0];
+        // Вытаскиваем Email юзера
+        $email = preg_replace("/\s+/", "", $request->email_user);
+
+        // Проверяем не зарегистрирован ли клиент на сайте и если нет,
+        // то регистрируем его и отправляем сообщение на почту о регистрации и создании личного кабинета,
+        // где он сможет проследить статус бронирования...
+        CheckController::checkEmailEndRegister($name_user, $email);
+
+        $date = $request->date_book; // Достали данные календаря выбранных дат клиентом (02.11.2022 - 05.11.2022)
+        $date = preg_replace("/\s+/", "", $date); // удалили пробелы
+        $date_array = explode("-", $date); // преобразовали в массив
+
+        // Изменение данных в БД Отчёты. Изменяем сумму
+        $condition = 1;                                            // 1 - прибавить, 2 - вычесть
+        DateController::setCountNightObj($date_array, $request->id, $request->sum, $condition);
+
+        // Формируем массив диапазона [0] - старт, [1] - завершения
+        $start_data = $date_array[0];
+        $end_data = $date_array[1];
+        $date_b = DateController::getDates($start_data, $end_data);// Получили массив дат из диапазона
+        $date_book = implode(',', $date_b);// Переводим в строку массив дат для добавления в BD
+        // Добавляем бронирование в БД
+        $id = Booking::insertGetId([
+                'room' => $request->id,
                 'name_user' => $name_user,
-                'phone_user' => $_POST['phone_user'],
-                'email_user' => $_POST['email_user'],
+                'phone_user' => $request->phone_user,
+                'email_user' => $request->email_user,
                 'date_book' => $date_book,
-                'no_in' => $startTime,
-                'no_out' => $endTime,
-                'more_book' => $_POST['date_view'],
-                'user_info' => $user_info,
-                'summ' => $_POST ['sum'],
+                'no_in' => $start_data,
+                'no_out' => $end_data,
+                'more_book' => $request->date_view,
+                'user_info' => $user,
+                'summ' => $request->sum,
             ]
         );
-
-        $new_book = Booking::where('code_book', $code_book)->value('id');
+        // Формируем данные для писем клиенту и админу
         $data = [
-            'in' => $startTime,
-            'out' => $endTime,
+            'in' => $start_data,
+            'out' => $end_data,
             'name_user' => $name_user,
-            'id' => $new_book,
+            'id' => $id,
             'url' => request()->root(),
 
         ];
-        $subject = 'Бронирование дат';
-        $toEmail = $_POST['email_user'];
-        Mail::to($toEmail)->send(new SendBooking($subject, $data));
-        $sub3 = 'Новое бронирование';
-        $email_admin = '0120912@mail.ru';
-        Mail::to($email_admin)->send(new NewBooking($sub3, $data));
-        $mess = MessagesController::booking($email);
+        $subject = 'Бронирование дат'; // Заголовок письма юзеру
+        Mail::to($email)->send(new SendBooking($subject, $data));// Отправка письма юзеру
+        $sub3 = 'Новое бронирование'; // Заголовок письма админу
+        $email_admin = '0120912@mail.ru'; // Емаил админа
+        Mail::to($email_admin)->send(new NewBooking($sub3, $data));// Отправка письма админу
+        $mess = MessagesController::booking($email); // Сообщение, что бронирование прошло успешно.
+        // Редирект на страницу с благодарностью
         return redirect()->action('DankeController@view', ['mess' => $mess]);
     }
 
 
-    public function verification()
+    public function verification(Request $request)
     {
-        $date_view = [];
-        $l = explode(',', $_POST ['date_view']);
-        foreach ($l as $goo) {
-            $date_view [] = $goo;
+        // Валидация введённых данных клиентом
+        $request->validate([
+            'phone_user' => 'required|max:18',
+            'email_user' => 'required|max:100',
+            'age' => 'required|max:3',
+        ]);
+
+        // Формируем информационный массив из строки ($request->date_view) 03.11.2022/1300,04.11.2022/1300...
+        $date_array = explode(',', $request->date_view);// 0 => "03.11.2022/1300"  1 => "04.11.2022/1300"
+        $date_array[] = $request->summ;
+
+        // Формируем массив информации всех гостей: 0 => "Иван Иванов, 45, Москва", 1 => "Галина Иванова, 43, Москва"
+        $guests = [];
+        for ($li = 0; $li < count($request->name_user); $li++) {
+            $guests[] = $request->name_user [$li] . ", " . $request->age [$li] . ", " . $request->from [$li];
         }
-        $date_view [] = $_POST ['summ'];
-        $more_b = [];
-        for ($li = 0; $li < count($_POST['name_user']); $li++) {
-            $more_b[] = $_POST ['name_user'] [$li] . ", " . $_POST ['age'] [$li] . ", " . $_POST ['nationality'] [$li];
-        }
 
-        return view('verifications.verification_booking')->with(['date_view' => $date_view, 'more_book' => $more_b, 'id' => $_POST['id'], 'sum' => $_POST['sum']]);
-
-
+        return view('verifications.verification_booking')->with(['date_view' => $date_array, 'more_book' => $guests, 'id' => $request->id, 'sum' => $request->sum]);
     }
 
-    public function addInfo(Request $request)
+    public function setInfo(Request $request)
     {
+
         $request->validate([
             'date_book' => 'required'
         ]);
-        $array_rooms = Schedule::where('room', $_POST['id'])->get();
+
+        //Определение и подсчёт стоимости за каждый выбранный день
+        $array_rooms = Schedule::where('room', $request->id)->get(); // Достали инфу стоимости всех дат по id объекта из BD
+
+        //Формируем индексный массив дат из БД
         $array_date = [];
-        foreach ($array_rooms as $it) {
-            $array_date[] = $it->date_book;
+        foreach ($array_rooms as $value) {
+            $array_date[] = $value->date_book;
         }
-        $date_u = preg_replace("/\s+/", "", $_POST['date_book']);// удалили пробелы
-        $date_u = explode("-", $date_u);
-        $arr_date = DateController::getDates($date_u[0], $date_u[1]);
-        $arr_date[]= $date_u[1];
-        $sum_night = count($arr_date);
+
+        // Формируем массив диапазона выбранных дат клиентом для определения стоимости
+        $date_str = preg_replace("/\s+/", "", $request->date_book);// удалили пробелы
+        $date_arr = explode("-", $date_str); // Разбили на массив диапазона
+        $arr_date = DateController::getDates($date_arr[0], $date_arr[1]); // Получили все даты из диапазона
+        $arr_date[] = $date_arr[1];
+
+        // Определение стоимости по датам
+        $sum_night = count($arr_date); // Количество ночей
         $date_view = [];
         foreach ($arr_date as $item) {
-            if (!empty(in_array($item, $array_date))) { // проверка есть ли в массиве
-                $cumm_cost = Schedule::where('room', $_POST['id'])->where('date_book', $item)->value('cost');;
-                $date_view[] = $item . "/" . $cumm_cost;
-                $cost[] = $cumm_cost/* + $cost_arr*/
-                ;
+            // проверка есть ли в массиве, если да, то дастаём стоимости даты из массива $array_rooms
+            // Если выбранной даты нет в массиве, то отправляем сообщение, что админом не заполнена одна из дат.
+            if (!empty(in_array($item, $array_date))) {
+                foreach ($array_rooms as $room) {
+                    if ($room->date_book == $item) {
+                        $cumm_cost = $room->cost; // Стоимость за ночь
+                        $date_view[] = $item . "/" . $cumm_cost; // Строка дата/стоимость для вывода информации пользователю
+                        $cost[] = $cumm_cost;
+                    }
+                }
             } else {
                 return view('sorry.sorry');
             }

@@ -19,7 +19,6 @@ class VerifyCsrfToken extends Middleware
         'delete_file',
         '/upload_img',
         '/delete_file',
-        'edit_room',
         'get_cost',
     ];
 }

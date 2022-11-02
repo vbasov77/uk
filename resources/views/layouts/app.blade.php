@@ -60,13 +60,13 @@
                             </a>
 
                             <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdown">
-                                @if(Auth::user()->role == 1)
+                                @if(Auth::user()->isAdmin())
                                     <a class="dropdown-item" href="{{route('room')}}">Добавить номер</a>
                                     <a class="dropdown-item" href="{{route('settings')}}">Настройки</a>
                                     <a class="dropdown-item" href="{{route('reports')}}">Отчёты</a>
                                     <a class="dropdown-item" href="{{route('orders')}}">Заказы</a>
-                                    {{--                                    <a class="dropdown-item" href="{{route('schedule')}}">Расписание</a>--}}
                                     <a class="dropdown-item" href="{{route('clear')}}">Очистить кэш</a>
+                                    <a class="dropdown-item" href="{{route('schedule_clear')}}">Очистить базу</a>
                                 @endif
                                 @if(Auth::user()->isAdmin() || Auth::user()->isPartner())
                                     <a class="dropdown-item" href="{{route('reports.partner')}}">Отчёты</a>

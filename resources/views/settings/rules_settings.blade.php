@@ -29,7 +29,7 @@
                         <br>
                         <div>
                             <label for="rules[]"><b>Минимальное количество дней</b></label><br>
-                            <input name="rules[]" type="text" value="<?= $rules [1] ?? '' ?>"
+                            <input name="rules[]" type="text" value="{{$rules [1] ?? '' }}"
                                    class="form-control" style="text-align: center"
                                    placeholder="Минимум дней"
                                    onkeypress="return (event.charCode >= 48 && event.charCode <= 57 && /^\d{0,3}$/.test(this.value));"
@@ -38,7 +38,7 @@
                         <br>
                         <div>
                             <label for="rules[]"><b>Максимальное количество дней</b></label><br>
-                            <input name="rules[]" type="text" value="<?= $rules [2] ?? '' ?>"
+                            <input name="rules[]" type="text" value="{{$rules [2] ?? '' }}"
                                    class="form-control" style="text-align: center"
                                    placeholder="Максимум дней"
                                    onkeypress="return (event.charCode >= 48 && event.charCode <= 57 && /^\d{0,3}$/.test(this.value));"

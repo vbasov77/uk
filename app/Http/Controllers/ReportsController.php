@@ -21,6 +21,7 @@ class ReportsController extends Controller
 
     public function roomReports(Request $request)
     {
+        // Формирование отчёта за весь период объекта
         $reports = false;
         $result = Reports::where('room_id', $request->id)->get();
         // Формируем массив по порядку
@@ -44,14 +45,22 @@ class ReportsController extends Controller
 
     public function objView(Request $request)
     {
-        $data = Rooms::where('id', $request->id)->first();
-        $date_b = DateController::getBookingDatesId($request->id);
-        $res = Settings::get('rule');
-        $rules = explode('&', $res [0]->rule);
-        $count_night = GetController::getCountNight($request->id);
-        $sum = GetController::getSum($request->id);
-        $last_month = date('m.Y', strtotime("-1 Months"));
-        $last_report = Reports::where('room_id', $request->id)->where('month', $last_month)->first();
+        // Подробный отчёт с календарём занятых дат определённого объекта по id
+        $data = Rooms::where('id', $request->id)->first(); // Получили данные объекта
+        $date_b = DateController::getBookingDatesId($request->id);  // Получение забронированных дат по ID номера
+        $res = Settings::get('rule'); // Получам строку из БД правил календаря типа 2&2&25
+        $rules = explode('&', $res[0]->rule);// Получаем массив правил для календаря, где:
+        // 0 => (c какого дня разрешено бронировать: 1 - сегодня; 2 - завтра)
+        // 1 => (минимальное количество дней)
+        // 2 => (максимальное количество дней)
+
+        $count_night = GetController::getCountNight($request->id);// Количество ночей
+        $sum = GetController::getSum($request->id); // Получили сумму
+        $last_month = date('m.Y', strtotime("-1 Months")); // Прошлый месяц
+        $last_report = Reports::where('room_id', $request->id)->where('month', $last_month)->first();// Отчёт за
+        //прошлый месяц
+
+        // Формируем дату старта для календаря
         if (!empty($rules['2']) && $rules['2'] == 1) {
             $start = date("Y-m-d");
         } else {

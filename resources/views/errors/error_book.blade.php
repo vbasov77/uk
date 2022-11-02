@@ -21,9 +21,7 @@
         </center>
         <br>
         @if(empty(\Illuminate\Support\Facades\Auth::check()))
-
             <a class="btn btn-primary btn-sm" href="{{ route('login') }}">{{ __('Login') }}</a>
-
             @if (Route::has('register'))
                 <a class="btn btn-danger btn-sm" href="{{ route('register') }}">{{ __('Register') }}</a>
             @endif
