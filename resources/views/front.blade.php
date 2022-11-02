@@ -24,7 +24,7 @@
                         <form action="{{route('search.room')}}" method="post">
                             @csrf
                             <div class="row gx-0 mb-5 mb-lg-0 justify-content-center">
-                                <div class="col-8">
+                                <div class="col-9">
                                     <label for="date_book" style="color: white; width: 90%"><b>Выберете
                                             дату:</b></label>
                                     <div class="front">

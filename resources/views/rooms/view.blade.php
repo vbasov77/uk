@@ -1,137 +1,139 @@
 @extends('layouts.app')
 @section('content')
     <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
-    <section>
-        <div class="container">
-            <div class="row  justify-content-center text-center">
+
+    <section class="projects-section bg-light" id="projects">
+        <div class="container px-4 px-lg-5">
+            <div class="row justify-content-center text-center">
                 <div style="padding: 20px">
                     <h3>{{$data ['name_room']}}</h3><br>
                 </div>
-                <div class="row">
-                    <div class="col-xl-8">
-                        <div id="carusel" class="carousel slide" data-ride="carousel">
-                            <ul class="carousel-indicators">
-                                @if(!empty($photo))
-                                    @for ($s = 0; $s < count($photo); $s++)
-                                        @php
-                                            if ($s == 0){
-                                                 $active = "active";
-                                            } else {$active = "";}
-                                        @endphp
-                                        <li data-target="#carusel" data-slide-to="{{$s}}" class="{{$active}}"></li>
-                                    @endfor
-                                @endif
-                            </ul>
-                            <div class="carousel-inner">
 
-                                @if(!empty($photo))
-                                    @for ($i = 0; $i < count($photo); $i++)
-                                        @php
-                                            if ($i == 0){
-                                                $carusel = "carousel-item active";
-                                                 } else {$carusel = "carousel-item";}
-                                        @endphp
-                                        <div class="{{$carusel}}">
-                                            <img src="{{ asset('images/' . $photo[$i])}}" alt="">
-                                        </div>
-
-                                    @endfor
-                                @else
-                                    <img src="{{ asset('images/no_image/no_image.jpg')}}" alt="">
-                                @endif
-                                <a class="carousel-control-prev" href="#carusel" data-slide="prev">
-                                    <span class="carousel-control-prev-icon"></span>
-                                </a>
-                                <a class="carousel-control-next" href="#carusel" data-slide="next">
-                                    <span class="carousel-control-next-icon"></span>
-                                </a>
-                            </div>
-                        </div>
-
-                    </div>
-
-                    <div class="col-xl-4">
-                        @if (!empty($data['price']))
-                            <div style="font-size: 30px; margin-bottom: 15px; opacity: .7; margin-top: 45px; ">
-                                <b> От {{ $data ['price'] }} <i class="fa fa-rub"></i></b>
-                            </div>
-                        @endif
-                        @if (!empty($data['service'])  )
-                            <h3 style="padding: 15px">Сервис</h3>
-                            @php
-                                $service = explode(',', $data['service']);
-                            @endphp
-
-                            @foreach($service as $value)
-                                <div style="font-size: 23px;">
-                                    <i class="fa fa-check"></i> {{$value }}<br>
-                                </div>
-                            @endforeach
-
-                        @endif
-                    </div>
-                </div>
-                <br>
-                <div class="row">
-                    <div class="col-lg-6">
-                        <h3 style="padding: 15px">Забронировать</h3>
-                        <form action="{{route('add.calendar')}}" method="post">
-                            @csrf
-                            <input type="hidden" name="id" value="{{$data['id']}}">
-                            <label for="date_book"><b>Выберете дату:</b></label>
-                            <div>
-                                <input id="input-id" style="margin-bottom: 15px; text-align: center "
-                                       name="date_book"
-                                       type="text"
-                                       class="form-control" value="{{session('date_book') ?? ''}}"
-                                       placeholder="Нажмите для выбора даты" autocomplete="off"
-                                       required>
-                            </div>
-                            <div>
-                                <label for="guests"><b>Количество гостей:</b></label><br>
-                                @for ($i = 0; $i < $data->capacity; $i++)
-                                    <div>
-                                        <input required class="radio" type="radio" name="guests" value="{{ $i + 1 }}"
-                                                @php
-                                                    if (!empty(session('people')) and session('people') == $i + 1) {
-                                                        echo 'checked';
-                                                    }
-                                                @endphp
-                                        >
-                                        {{$i + 1}} чел. <br>
-                                    </div>
+                <div class="col-xl-8">
+                    <div id="carusel" class="carousel slide" data-ride="carousel">
+                        <ul class="carousel-indicators">
+                            @if(!empty($photo))
+                                @for ($s = 0; $s < count($photo); $s++)
+                                    @php
+                                        if ($s == 0){
+                                             $active = "active";
+                                        } else {$active = "";}
+                                    @endphp
+                                    <li data-target="#carusel" data-slide-to="{{$s}}" class="{{$active}}"></li>
                                 @endfor
-                            </div>
-                            <div>
-                                <input class="btn btn-outline-success" type="submit" value="Забронировать">
-                            </div>
-                        </form>
-                    </div>
-                    <div class="col-lg-6">
-                        <h3 style="padding: 15px">Подробнее</h3>
+                            @endif
+                        </ul>
+                        <div class="carousel-inner">
 
-                        <div style="font-size: 18px">
-                            {!!  $data->text_room !!}
+                            @if(!empty($photo))
+                                @for ($i = 0; $i < count($photo); $i++)
+                                    @php
+                                        if ($i == 0){
+                                            $carusel = "carousel-item active";
+                                             } else {$carusel = "carousel-item";}
+                                    @endphp
+                                    <div class="{{$carusel}}">
+                                        <img src="{{ asset('images/' . $photo[$i])}}" alt="">
+                                    </div>
+
+                                @endfor
+                            @else
+                                <img src="{{ asset('images/no_image/no_image.jpg')}}" alt="">
+                            @endif
+                            <a class="carousel-control-prev" href="#carusel" data-slide="prev">
+                                <span class="carousel-control-prev-icon"></span>
+                            </a>
+                            <a class="carousel-control-next" href="#carusel" data-slide="next">
+                                <span class="carousel-control-next-icon"></span>
+                            </a>
                         </div>
                     </div>
+
                 </div>
 
-                <br>
-                <br>
-                <div class="row justify-content-center text-center">
-                    <div class="col-12">
-                        @if (!empty($video))
-                            <div>
-                                <iframe width="560" height="315" src="{{$video}}" title="YouTube video player"
-                                        frameborder="0"
-                                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                                        allowfullscreen></iframe>
+                <div class="col-xl-4">
+                    @if (!empty($data['price']))
+                        <div style="font-size: 30px; margin-bottom: 15px; opacity: .7; margin-top: 45px; ">
+                            <b> От {{ $data ['price'] }} <i class="fa fa-rub"></i></b>
+                        </div>
+                    @endif
+                    @if (!empty($data['service'])  )
+                        <h3 style="padding: 15px">Сервис</h3>
+                        @php
+                            $service = explode(',', $data['service']);
+                        @endphp
+
+                        @foreach($service as $value)
+                            <div style="font-size: 23px;">
+                                <i class="fa fa-check"></i> {{$value }}<br>
                             </div>
-                        @endif
+                        @endforeach
+
+                    @endif
+                </div>
+            </div>
+            <br>
+            <div class="row justify-content-center text-center">
+                <div class="col-lg-6">
+                    <h3 style="padding: 15px">Забронировать</h3>
+                    <form action="{{route('add.calendar')}}" method="post">
+                        @csrf
+                        <input type="hidden" name="id" value="{{$data['id']}}">
+                        <label for="date_book"><b>Выберете дату:</b></label>
+                        <div>
+                            <input id="input-id" style="margin-bottom: 15px; text-align: center "
+                                   name="date_book"
+                                   type="text"
+                                   class="form-control" value="{{session('date_book') ?? ''}}"
+                                   placeholder="Нажмите для выбора даты" autocomplete="off"
+                                   readonly
+                                   required>
+                        </div>
+                        <div>
+                            <label for="guests"><b>Количество гостей:</b></label><br>
+                            @for ($i = 0; $i < $data->capacity; $i++)
+                                <div>
+                                    <input required class="radio" type="radio" name="guests" value="{{ $i + 1 }}"
+                                            @php
+                                                if (!empty(session('people')) and session('people') == $i + 1) {
+                                                    echo 'checked';
+                                                }
+                                            @endphp
+                                    >
+                                    {{$i + 1}} чел. <br>
+                                </div>
+                            @endfor
+                        </div>
+                        <div>
+                            <input class="btn btn-outline-success" type="submit" value="Забронировать">
+                        </div>
+                    </form>
+                </div>
+                <div class="col-lg-6">
+                    <h3 style="padding: 15px">Подробнее</h3>
+
+                    <div style="font-size: 18px">
+                        {!!  $data->text_room !!}
                     </div>
                 </div>
-                <br>
             </div>
+
+            <br>
+            <br>
+            <div class="row justify-content-center text-center">
+                <div class="col-12">
+                    @if (!empty($video))
+                        <div>
+                            <iframe width="560" height="315" src="{{$video}}" title="YouTube video player"
+                                    frameborder="0"
+                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                    allowfullscreen></iframe>
+                        </div>
+                    @endif
+                </div>
+            </div>
+            <br>
+        </div>
 
         </div>
     </section>
@@ -142,14 +144,17 @@
     </section>
     <section>
         <div class="row justify-content-center text-center">
-            @if(Auth::user()->isAdmin())
-                <div>
-                    <button class="btn btn-success btn-sm" style="color: white; margin-top: 25px"
-                            onclick="window.location.href = '{{route('edit.room', ['id'=>$data->id])}}'">
-                        Редактировать номер
-                    </button>
-                </div>
-            @endif
+            @guest()
+            @else
+                @if(Auth::user()->isAdmin())
+                    <div>
+                        <button class="btn btn-success btn-sm" style="color: white; margin-top: 25px"
+                                onclick="window.location.href = '{{route('edit.room', ['id'=>$data->id])}}'">
+                            Редактировать номер
+                        </button>
+                    </div>
+                @endif
+            @endguest
         </div>
     </section>
     @push('scripts')

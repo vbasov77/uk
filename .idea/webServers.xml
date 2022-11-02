@@ -3,7 +3,7 @@
   <component name="WebServers">
     <option name="servers">
       <webServer id="e83cb55e-29f0-431c-a5a9-4bc48231bd9e" name="uk" url="http://hostven03.com">
-        <fileTransfer host="hostven03.com" port="21" rootFolder="/uk.v-php.ru">
+        <fileTransfer host="hostven03.com" port="21" rootFolder="/real.v-php.ru">
           <advancedOptions>
             <advancedOptions dataProtectionLevel="Private" passiveMode="true" shareSSLContext="true" />
           </advancedOptions>

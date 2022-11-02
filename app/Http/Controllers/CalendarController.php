@@ -7,6 +7,7 @@ use App\Mail\SendBooking;
 use App\Models\Booking;
 use App\Models\Schedule;
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Mail;
 
 
@@ -14,6 +15,7 @@ class CalendarController extends Controller
 {
     public function addBooking(Request $request)
     {
+
         //Проверка на занятость дат
         // Если за время бронирования, даты уже кто-то занял, или исключить повторного бронирования,
         // сообщаем юзеру о недопустимости
@@ -76,6 +78,7 @@ class CalendarController extends Controller
         $date_b = DateController::getDates($start_data, $end_data);// Получили массив дат из диапазона
         $date_book = implode(',', $date_b);// Переводим в строку массив дат для добавления в BD
         // Добавляем бронирование в БД
+        $info_users = implode('&', $request->more_book);
         $id = Booking::insertGetId([
                 'room' => $request->id,
                 'name_user' => $name_user,
@@ -85,7 +88,7 @@ class CalendarController extends Controller
                 'no_in' => $start_data,
                 'no_out' => $end_data,
                 'more_book' => $request->date_view,
-                'user_info' => $user,
+                'user_info' => $info_users,
                 'summ' => $request->sum,
             ]
         );
@@ -98,6 +101,7 @@ class CalendarController extends Controller
             'url' => request()->root(),
 
         ];
+
         $subject = 'Бронирование дат'; // Заголовок письма юзеру
         Mail::to($email)->send(new SendBooking($subject, $data));// Отправка письма юзеру
         $sub3 = 'Новое бронирование'; // Заголовок письма админу
