@@ -107,7 +107,7 @@ class CalendarController extends Controller
         $sub3 = 'Новое бронирование'; // Заголовок письма админу
         $email_admin = '0120912@mail.ru'; // Емаил админа
         Mail::to($email_admin)->send(new NewBooking($sub3, $data));// Отправка письма админу
-        $mess = MessagesController::booking($email); // Сообщение, что бронирование прошло успешно.
+        $mess = MessageController::booking($email); // Сообщение, что бронирование прошло успешно.
         // Редирект на страницу с благодарностью
         return redirect()->action('DankeController@view', ['mess' => $mess]);
     }

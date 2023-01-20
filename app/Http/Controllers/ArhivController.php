@@ -38,7 +38,7 @@ class ArhivController extends Controller
         ];
         Archive::insert($data); // Добавили в архив
         Booking::where('id', $request->id)->delete(); // Удалили из базы данных бронирования
-        return redirect()->action('OrdersController@view');
+        return redirect()->action('OrderController@view');
     }
 
 

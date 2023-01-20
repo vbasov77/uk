@@ -134,13 +134,12 @@
             </div>
             <br>
         </div>
-
-        </div>
     </section>
-    <div style="margin-top: 25px; margin-bottom: 25px; text-align: center;">
-        <h2>На карте</h2>
-    </div>
-    <div id="map" style="width: 100%; height: 400px"></div>
+    <section>
+        <div style="margin-top: 25px; margin-bottom: 25px; text-align: center;">
+            <h2>На карте</h2>
+        </div>
+        <div id="map" style="width: 100%; height: 400px"></div>
     </section>
     <section>
         <div class="row justify-content-center text-center">

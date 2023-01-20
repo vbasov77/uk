@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Images;
-use App\Models\Rooms;
+use App\Models\Image;
+use App\Models\Room;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
@@ -25,13 +25,13 @@ class FileController extends Controller
             // Добавление файла в папку public
             $image->move(public_path('images'), $filename);
             // Записываем имя файла в BD
-            Images::insert([
+            Image::insert([
                 'room_id' => $request->id,
                 'path'=> $filename,
 
             ]);
             // Получаем все фото объекта
-            $result = Images::where('room_id', $request->id)->get();
+            $result = Image::where('room_id', $request->id)->get();
             foreach ($result as $value){
                 $array[] = $value->path;
             }
@@ -49,7 +49,7 @@ class FileController extends Controller
 
         // Удаление сессий
         $id = (int)\session('id');
-        $r = Rooms::where('id', $id)->get('photo_room');
+        $r = Room::where('id', $id)->get('photo_room');
         $result = json_decode(json_encode($r), true);
         $res = explode(',', $result[0]['photo_room']);
         $fil_sess = $request->session()->pull('file', 'default');
@@ -67,7 +67,7 @@ class FileController extends Controller
         if ($request->get('file')) {
             $file = $request->get('file');
             File::delete(public_path('images/' . $request->get('file')));// Удалили файл
-            Images::where('room_id', $request->id)->where('path', $file)->delete();// Удалили из БД
+            Image::where('room_id', $request->id)->where('path', $file)->delete();// Удалили из БД
         }
     }
 }

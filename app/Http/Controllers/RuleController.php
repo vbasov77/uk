@@ -2,15 +2,15 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Settings;
+use App\Models\Setting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
-class RulesController extends Controller
+class RuleController extends Controller
 {
     public function view()
     {
-        $result = Settings::get('rule');// Получаем массив правил для календаря, где:
+        $result = Setting::get('rule');// Получаем массив правил для календаря, где:
         // 0 => (c какого дня разрешено бронировать: 1 - сегодня; 2 - завтра)
         // 1 => (минимальное количество дней)
         // 2 => (максимальное количество дней)
@@ -26,9 +26,9 @@ class RulesController extends Controller
         // 1 => (минимальное количество дней)
         // 2 => (максимальное количество дней)
         $rule = implode('&', $request->rules);
-        Settings::where('id', 1)->update(['rule' => $rule]);
+        Setting::where('id', 1)->update(['rule' => $rule]);
         $message = 'Настройки сохранены';
-        return redirect()->action('SettingsController@view', ['message' => $message]);
+        return redirect()->action('SettingController@view', ['message' => $message]);
 
     }
 

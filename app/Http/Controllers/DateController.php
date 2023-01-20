@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Booking;
-use App\Models\Reports;
+use App\Models\Report;
 use App\Models\Schedule;
 
 class DateController extends Controller
@@ -22,7 +22,7 @@ class DateController extends Controller
         // Сравним месяцы, если они совпадают, то суммируем либо вычетаем сумму, в зависимости от заданного действия
         // переданного в переменной $condition: 1 - прибавление, 2 - вычетание
         if ($in === $out) {
-            $result = Reports::where('room_id', $room_id)->where('month', $in)->get();
+            $result = Report::where('room_id', $room_id)->where('month', $in)->get();
             $data = [];
             if (!empty(count($result))) {
                 $data[] = $result[0]->count_night;
@@ -45,7 +45,7 @@ class DateController extends Controller
                 }
                 $sum_first = array_sum($sum_first_ar);// Вся сумма первого массива
                 $month_first = date('m.Y', strtotime($date[0]));
-                $result = Reports::where('room_id', $room_id)->where('month', $month_first)->get();
+                $result = Report::where('room_id', $room_id)->where('month', $month_first)->get();
                 $data = [];
                 if (!empty(count($result))) {
                     $data[] = $result[0]->count_night;
@@ -66,7 +66,7 @@ class DateController extends Controller
                 $sum_second = array_sum($sum_second_ar);// Вся сумма второго массива
                 $month_second = date('m.Y', strtotime($date[1]));
                 $count_night_second = GetController::countNight($first_date_second_arr, $date[1]) + 1;
-                $res = Reports::where('room_id', $room_id)->where('month', $month_second)->get();
+                $res = Report::where('room_id', $room_id)->where('month', $month_second)->get();
                 $data_second = [];
                 if (!empty(count($res))) {
                     $data_second[] = $res[0]->count_night;
@@ -92,13 +92,13 @@ class DateController extends Controller
                 $new_sum = $data[1] - $sum;
             }
             // Изменение данных по id в БД reports
-            Reports::where('room_id', $room_id)->where('month', $month)->update(
+            Report::where('room_id', $room_id)->where('month', $month)->update(
                 [
                     'count_night' => $night,
                     'sum' => $new_sum
                 ]);
         } else {
-            Reports::insert([
+            Report::insert([
                 'room_id' => $room_id,
                 'count_night' => $count_night,
                 'sum' => $sum,

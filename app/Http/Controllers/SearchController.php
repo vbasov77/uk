@@ -3,8 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Booking;
-use App\Models\Images;
-use App\Models\Rooms;
+use App\Models\Image;
+use App\Models\Room;
 use Illuminate\Http\Request;
 
 
@@ -24,7 +24,7 @@ class SearchController extends Controller
         $request->session()->put('people', $request->people); // Добавили количество человек в сессию
         $request->session()->save();
         $all_booking = Booking::all(); // Получили массив всех бронирований
-        $all_rooms = Rooms::all(); // Получили все объекты
+        $all_rooms = Room::all(); // Получили все объекты
 
         // Дата имеет вид 20.10.2022 - 25.10.2022. Удаляем пробелы и формируем массив
         // для получения всех дат в промежутке

@@ -2,19 +2,19 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Images;
-use App\Models\Rooms;
-use App\Models\Settings;
+use App\Models\Image;
+use App\Models\Room;
+use App\Models\Setting;
 use App\Models\Video;
 use Illuminate\Http\Request;
 
 
-class RoomsController extends Controller
+class RoomController extends Controller
 {
     public function view(Request $request)
     {
         // Получение данных для отображения объекта
-        $data = Rooms::find($request->id);// Получили данные по id объекта из БД rooms
+        $data = Room::find($request->id);// Получили данные по id объекта из БД rooms
         $photo = GetController::getImages($request->id);// Получили пути на фото
 
         // Получим все забронированные даты для отображения в календаре
@@ -24,14 +24,15 @@ class RoomsController extends Controller
         // 0 => Старт бронирования - 1 сегодня, 2 - завтра
         // 1 => Минимальное количество дней
         // 2 => Максимальное количество дней
-        $res = Settings::get('rule');
+        $res = Setting::get('rule');
         $rules = explode('&', $res [0]->rule);
         if (!empty($rules['2']) && $rules['2'] == 1) {
             $start = date("Y-m-d"); // Сегодняшняя дата
         } else {
             $d = strtotime("+1 day");
-            $start = date("Y-m-d", $d); // автрашняя дата
+            $start = date("Y-m-d", $d); // Завтрашняя дата
         }
+
         $video = GetController::getPathVideoRoom($request->id); // Получили ссылку на видео объекта
         return view('rooms.view', ['video' => $video, 'start' => $start, 'data' => $data, 'photo' => $photo, 'date_book' => $date_b ['date_book'], 'rules' => $rules]);
     }
@@ -41,8 +42,8 @@ class RoomsController extends Controller
         // этот код выполнится, если используется метод GET
         if ($request->isMethod('get')) {
             // Получение данных для редактирования объекта
-            $room = Rooms::where('id', $request->id)->get();
-            $photo_room = Images::where('room_id', $request->id)->get();
+            $room = Room::where('id', $request->id)->get();
+            $photo_room = Image::where('room_id', $request->id)->get();
             $images = null;
             if (!empty(count($photo_room))) {
                 foreach ($photo_room as $value) {
@@ -58,7 +59,7 @@ class RoomsController extends Controller
             // Изменение (редактирование) данных объекта в БД при использовании Ajax
             if (!empty($request->id)) {
                 // Изменяем данные объекта в БВ по ID
-                Rooms::where('id', $request->id)->update([
+                Room::where('id', $request->id)->update([
                     'address' => $request->address,
                     'price' => $request->price,
                     'title' => $request->title,
@@ -107,7 +108,7 @@ class RoomsController extends Controller
 
                 ]);
                 // Запись данных в БД
-                $id = Rooms::insertGetId([
+                $id = Room::insertGetId([
                     'name_room' => $request->name_room,
                     'user_id' => $request->user_id,
                     'address' => $request->address,
@@ -119,7 +120,7 @@ class RoomsController extends Controller
                     'coordinates' => $request->coordinates,
 
                 ]);
-                return redirect()->action('RoomsController@viewEdit', ['id' => $id]);
+                return redirect()->action('RoomController@viewEdit', ['id' => $id]);
             }
         }
     }

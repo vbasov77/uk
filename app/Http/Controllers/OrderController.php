@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 
-class OrdersController extends Controller
+class OrderController extends Controller
 {
     public function view()
     {
@@ -36,7 +36,7 @@ class OrdersController extends Controller
         $condition = 2; //  1- добавление, 2 - удаление
         DateController::setCountNightObj($date, $result[0]->room, $result[0] ->summ, $condition);
         Booking::where('id', $id)->delete();
-        return redirect()->action('OrdersController@view');
+        return redirect()->action('OrderController@view');
     }
 
     public function confirm(Request $request)
@@ -58,7 +58,7 @@ class OrdersController extends Controller
         $subject = 'Подтверждение бронирования'; // Заголовок
         $to_email = $result[0]->email_user;
         Mail::to($to_email)->send(new ConfirmOrder($subject, $data));// Отправили письмо
-        return redirect()->action('OrdersController@view');
+        return redirect()->action('OrderController@view');
     }
 
     public function reject(int $id)
@@ -99,7 +99,7 @@ class OrdersController extends Controller
         ];
         Archive::insert($data); // Перенесли данные бронирования в архив
         Booking::where('id', $id)->delete(); // Удалили бронирование
-        return redirect()->action('OrdersController@view');
+        return redirect()->action('OrderController@view');
     }
 
 

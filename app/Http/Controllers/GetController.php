@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Images;
-use App\Models\Reports;
+use App\Models\Image;
+use App\Models\Report;
 use App\Models\Video;
 use Illuminate\Http\Request;
 
@@ -12,7 +12,7 @@ class GetController extends Controller
     public static function getCountNight(int $room_id)
     {
         // Получение количества занятых дней определённого объекта текущего месяца
-        $count = Reports::where('room_id', $room_id)->where('month', date('m.Y'))->get();
+        $count = Report::where('room_id', $room_id)->where('month', date('m.Y'))->get();
         if (empty(count($count))) {
             $count_night = 0;
         } else {
@@ -36,7 +36,7 @@ class GetController extends Controller
     public static function getImages(int $room_id)
     {
         // Получаем массив всех фото по id номера
-        $result = Images::where('room_id', $room_id)->get();
+        $result = Image::where('room_id', $room_id)->get();
         $img = null;
         if (!empty(count($result))) {
             foreach ($result as $value) {
@@ -75,7 +75,7 @@ class GetController extends Controller
     public static function getSum(int $room_id)
     {
         // Получение всей суммы определённого объекта за текущий месяц из БД - Отчёты (reports)
-        $result = Reports::where('room_id', $room_id)->where('month', date('m.Y'))->get();
+        $result = Report::where('room_id', $room_id)->where('month', date('m.Y'))->get();
         if (empty(count($result))) {
             $sum = 0;
         } else {

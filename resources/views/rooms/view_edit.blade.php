@@ -112,6 +112,7 @@
                 </div>
             </div>
         </div>
+        <div class='form_radio'><input id='radio-"+ count +"' type='radio' name='radio' value='"+ value +"'><label for='radio-"+ count +"'>"+ value +"</label></div>
 
         @push('scripts')
             <script src="{{ asset('dropzone/dropzone.min.js') }}" defer></script>

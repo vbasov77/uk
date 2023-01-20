@@ -4,16 +4,16 @@ namespace App\Http\Controllers;
 
 
 use App\Models\Payment;
-use App\Models\Rooms;
+use App\Models\Room;
 use Illuminate\Http\Request;
 
 
-class PartnersController extends Controller
+class PartnerController extends Controller
 {
     public function view(Request $request)
     {
         // Получение данных для отчёта партнёрам
-        $rooms = Rooms::where('user_id', $request->user()->id)->get();// Получили все объекты партнёра
+        $rooms = Room::where('user_id', $request->user()->id)->get();// Получили все объекты партнёра
         $payment = Payment::where('user_id', $request->user()->id)->value('payment');// Получили выплаты для портнёров
         if(empty($payment)){
             $payment = 0;

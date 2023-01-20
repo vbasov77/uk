@@ -3,14 +3,14 @@
 namespace App\Http\Controllers;
 
 
-use App\Models\Images;
+use App\Models\Image;
 
 class ImagesController extends Controller
 {
     public static function getDataWithPhoto($data)
     {
         // Добавляем первое фото для каждого объекта
-        $photos = Images::all();
+        $photos = Image::all();
         foreach ($data as $item) {
             foreach ($photos as $photo) {
                 if ($item->id == $photo->room_id) {

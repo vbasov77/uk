@@ -3,8 +3,8 @@
 namespace App\Http\Controllers;
 
 
-use App\Models\Rooms;
-use App\Models\Settings;
+use App\Models\Room;
+use App\Models\Setting;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -15,9 +15,9 @@ class FrontController extends Controller
     public function view(Request $request)
     {
         $request->session()->forget(['date_book', 'people']);// Удаляем сессию ('date_book', 'people') при обновлении
-        $data = Rooms::all(); // Получили все объекты
+        $data = Room::all(); // Получили все объекты
         $objects = ImagesController::getDataWithPhoto($data);// Добавили фото к объектам
-        $result = Settings::get(); // Получае правила настроек
+        $result = Setting::get(); // Получае правила настроек
         $rules = explode('&', $result[0]->rule); // Получаем массив правил для календаря, где:
         // 0 => (c какого дня разрешено бронировать: 1 - сегодня; 2 - завтра)
         // 1 => (минимальное количество дней)

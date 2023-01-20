@@ -36,8 +36,8 @@ $all_to_issue = 0;
                     <tbody>
                     @foreach($rooms as $room)
                         @php
-                            $report = \App\Models\Reports::where('room_id', $room-> id)->where('month', date('m.Y'))->first();
-                            $last_report = \App\Models\Reports::where('room_id', $room-> id)->where('month', date('m.Y',strtotime("-1 Months")))->first();
+                            $report = \App\Models\Report::where('room_id', $room-> id)->where('month', date('m.Y'))->first();
+                            $last_report = \App\Models\Report::where('room_id', $room-> id)->where('month', date('m.Y',strtotime("-1 Months")))->first();
                             $to_issue = $report['sum'] * (65 / 100);
 $zp = $report['sum'] * (35 / 100)
 

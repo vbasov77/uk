@@ -2,15 +2,15 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Settings;
+use App\Models\Setting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
-class SettingsController extends Controller
+class SettingController extends Controller
 {
     public function view()
     {
-        $data = Settings::all();
+        $data = Setting::all();
         $front = explode('&', $data[0]->front);
         if (empty($_GET['message'])) {
             $message = null;
@@ -36,19 +36,19 @@ class SettingsController extends Controller
                 }
                 $data[] = $filename;
                 $front_str = implode('&', $data);
-                Settings::where('id', 1)->update(['front' => $front_str]);
+                Setting::where('id', 1)->update(['front' => $front_str]);
                 $message = 'Настройки сохранены';
-                return redirect()->action('SettingsController@view', ['message' => $message]);
+                return redirect()->action('SettingController@view', ['message' => $message]);
             } else {
                 $data = implode('&', $_POST ['data']);
-                Settings::where('id', 1)->update(['front' => $data]);
+                Setting::where('id', 1)->update(['front' => $data]);
                 $message = 'Настройки сохранены';
-                return redirect()->action('SettingsController@view', ['message' => $message]);
+                return redirect()->action('SettingController@view', ['message' => $message]);
             }
 
         }
         if ($request->isMethod('get')) {
-            $res = Settings::where('id', 1)->value('front');
+            $res = Setting::where('id', 1)->value('front');
             $data = explode('&', $res);
             return view('settings/front_settings', ['data' => $data]);
         }

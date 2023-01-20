@@ -4,18 +4,18 @@ namespace App\Http\Controllers;
 
 use App\Models\Booking;
 use App\Models\Payment;
-use App\Models\Reports;
-use App\Models\Rooms;
-use App\Models\Settings;
+use App\Models\Report;
+use App\Models\Room;
+use App\Models\Setting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
-class ReportsController extends Controller
+class ReportController extends Controller
 {
     public function view()
     {
-        $rooms = Rooms::all();
+        $rooms = Room::all();
         return view('reports.view', ['rooms' => $rooms]);
     }
 
@@ -23,7 +23,7 @@ class ReportsController extends Controller
     {
         // Формирование отчёта за весь период объекта
         $reports = false;
-        $result = Reports::where('room_id', $request->id)->get();
+        $result = Report::where('room_id', $request->id)->get();
         // Формируем массив по порядку
         if (!empty(count($result))) {
             for ($i = 0; $i < count($result); $i++) {
@@ -46,9 +46,9 @@ class ReportsController extends Controller
     public function objView(Request $request)
     {
         // Подробный отчёт с календарём занятых дат определённого объекта по id
-        $data = Rooms::where('id', $request->id)->first(); // Получили данные объекта
+        $data = Room::where('id', $request->id)->first(); // Получили данные объекта
         $date_b = DateController::getBookingDatesId($request->id);  // Получение забронированных дат по ID номера
-        $res = Settings::get('rule'); // Получам строку из БД правил календаря типа 2&2&25
+        $res = Setting::get('rule'); // Получам строку из БД правил календаря типа 2&2&25
         $rules = explode('&', $res[0]->rule);// Получаем массив правил для календаря, где:
         // 0 => (c какого дня разрешено бронировать: 1 - сегодня; 2 - завтра)
         // 1 => (минимальное количество дней)
@@ -57,7 +57,7 @@ class ReportsController extends Controller
         $count_night = GetController::getCountNight($request->id);// Количество ночей
         $sum = GetController::getSum($request->id); // Получили сумму
         $last_month = date('m.Y', strtotime("-1 Months")); // Прошлый месяц
-        $last_report = Reports::where('room_id', $request->id)->where('month', $last_month)->first();// Отчёт за
+        $last_report = Report::where('room_id', $request->id)->where('month', $last_month)->first();// Отчёт за
         //прошлый месяц
 
         // Формируем дату старта для календаря
@@ -73,7 +73,7 @@ class ReportsController extends Controller
     public function paid(Request $request)
     {
         // Внесение изменения оплаты в таблицу reports. По умолчанию 1(не оплачено), 2 - Оплачено
-        Reports::where('room_id', $request->id)->where('month', $request->month)->update(['paid' => 2]);
+        Report::where('room_id', $request->id)->where('month', $request->month)->update(['paid' => 2]);
         self::setPayment($request->id, $request->paid, 1);
         return redirect()->back()->with(['id' => $request->id]);
     }
@@ -81,7 +81,7 @@ class ReportsController extends Controller
     public function paidCancel(Request $request)
     {
         //Отмена внесения оплаты
-        Reports::where('room_id', $request->id)->where('month', $request->month)->update(['paid' => 1]);
+        Report::where('room_id', $request->id)->where('month', $request->month)->update(['paid' => 1]);
         self::setPayment($request->id, $request->paid, 2);
         return redirect()->back()->with(['id' => $request->id]);
     }
@@ -105,7 +105,7 @@ class ReportsController extends Controller
 
     public function paidConfirm(Request $request){
 
-        Reports::where('room_id', $request->id)->where('month', $request->month)->update(['confirm'=>2]);
+        Report::where('room_id', $request->id)->where('month', $request->month)->update(['confirm'=>2]);
         return redirect()->back()->with(['id'=>$request->id]);
     }
 

@@ -72,8 +72,6 @@ $(function () {
             }
         });
         $.ajax({
-
-
             url: '/edit_room',
             type: 'POST',
             data: data,
@@ -84,7 +82,6 @@ $(function () {
             success: function (response) {
                 preloader.delay(500).fadeOut('slow', function () {
                     var res = JSON.parse(response);
-                    console.log(res);
                     if (res.answer === 'ok') {
                         $('.preview').html(' <div class="alert alert-success alert-dismissible" role="alert" > <button type="button" class="close" data-dismiss="allert"' +
                             'aria-label="Close" > <span aria-hidden="true" >&times;</span></button> Данные сохранены</div>');
