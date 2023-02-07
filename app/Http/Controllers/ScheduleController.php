@@ -34,25 +34,8 @@ class ScheduleController extends Controller
     {
         // этот код выполнится, если используется метод GET
         if ($request->isMethod('get')) {
-            // Формирование данных для добавления новых цен за сутки
-            // С использованием календаря для выбора нескольких дат
-            $schedule = Schedule::where('room', $request->id)->get(); // Получили все занятые дни для календаря
             $nam = Room::where('id', $request->id)->value('title'); // Получили название объекта
-
-            // Если есть цены, то формируем массив занятых дат для календаря
-            if (!empty(count($schedule))) {
-                $date_b = [];
-                foreach ($schedule as $res) {
-                    $date_b[] = $res->date_book;
-                }
-                $dis = [];
-                foreach ($date_b as $item) {
-                    $dis[] = date("Y-m-d", strtotime($item));
-                }
-                $date_book = implode(',', $dis);
-            } else {
-                $date_book = "";
-            }
+            $date_book = self::getBusyDates($request->id);
             return view('schedule.schedule')->with(['date_book' => $date_book, 'id' => $request->id, 'name_room' => $nam]);
         }
 
@@ -68,7 +51,6 @@ class ScheduleController extends Controller
             }
             $array = implode(',', $arr);
             $db_book = TableCost::where('obj_id', $request->room)->get();
-
             $table_arr_book = []; // Массив дат из BD
             foreach ($db_book as $item) {
                 $dat_arr = explode(',', $item->date_book);
@@ -78,110 +60,53 @@ class ScheduleController extends Controller
             // Сольём два полученных массива новых дат и дат из BD в один индексный $arr и $table_arr_book
 //            $table_arr_book = Arr::collapse($table_arr_book);
             $all_dates_arr = [];
-            $all_dates_arr[] = $arr;
-            $all_dates_arr[] = $table_arr_book;
-            $all_dates_arr = Arr::collapse($all_dates_arr);
-
+            $all_dates_arr = $arr;
+            $all_dates_arr = $table_arr_book;
             //Отделим даты от цен
-            foreach ($all_dates_arr as $ar){
+            foreach ($all_dates_arr as $ar) {
                 $only = explode('/', $ar);
                 $only_dates[] = strtotime($only[0]);
             }
-
             // Ранжировка дат по порядку
             sort($only_dates);
             $only_dates = array_unique($only_dates); // Удалили повторы из массива
             // Формируем массив из дат и цен с делиметром "/"
-            foreach ($only_dates as $da){
-                foreach ($all_dates_arr as $all){
+
+            foreach ($only_dates as $da) {
+                foreach ($all_dates_arr as $all) {
                     $a = explode('/', $all);
-                    if($da == strtotime($a[0])){
-                        $in[] = $a[0] .  '/' . $a[1];
+                    if ($da == strtotime($a[0])) {
+                        $in[] = $a[0] . '/' . $a[1];
                         break;
                     }
                 }
             }
             $in_table = implode(',', $in);
-            TableCost::where('obj_id', $request->room)->update([ 'date_book'=>$in_table]);
-
-
-//            // Добавление расписания
-//            $id = $request->room;
-//            $result = Schedule::where('room', $id)->get();
-//            $arr_date = [];
-//            foreach ($result as $res) {
-//                $arr_date[] = $res->date_book;
-//            }
-//            $d = $request->date_book;
-//            $d = preg_replace("/\s+/", "", $d);// удалили пробелы
-//            $dd = explode("-", $d);// Преобразовали в массив
-//            $startTime = $dd[0];
-//            $endTime = $dd[1];
-//            $date_b = DateController::getDates($startTime, $endTime);// Получили промежуточные даты
-//            $cost = $request->cost;
-//            $stat = 0;
-//            $dates = [];
-//            $dates [] = $startTime;
-//            foreach ($date_b as $b) {
-//                $dates [] = $b;
-//            }
-//            $dates [] = $endTime;
-//            foreach ($dates as $date) {
-//                if (empty(in_array($date, $arr_date))) {
-//                    Schedule::insert([
-//                        'room' => $request->room,
-//                        'date_book' => $date,
-//                        'cost' => $cost,
-//                        'stat' => $stat
-//                    ]);
-//
-//                } else {
-//                    Schedule::where('date_book', $date)->update([
-//                        'room' => $request->room,
-//                        'date_book' => $date,
-//                        'cost' => $cost,
-//                        'stat' => $stat
-//                    ]);
-//                }
-//
-//            }
-//
-//            $res = Schedule::all();
-//            if (!empty($res)) {
-//                // Переформатирование date_book
-//                $dis_s = [];
-//                $dis_a = [];
-//                for ($i = 0; $i < count($res); $i++) {
-//                    if ($res[$i]->stat == 0) {
-//                        $dis = explode(',', $res [$i]->date_book);
-//                        foreach ($dis as $item) {
-//                            $dis_s [] = date("Y-m-d", strtotime($item));
-//                        }
-//                        $dis_a[] = implode(',', $dis_s);
-//                    } elseif ($res[$i]->stat == 1) {
-//                        $dis_ii = explode(',', $res [$i]->date_book);
-//                        foreach ($dis_ii as $item) {
-//                            $dis_io [] = date("Y-m-d", strtotime($item));
-//                        }
-//                        $dis_in[] = implode(',', $dis_io);
-//                    } else {
-//                        $dis_o = explode(',', $res [$i]->date_book);
-//                        foreach ($dis_o as $item) {
-//                            $dis_ou [] = date("Y-m-d", strtotime($item));
-//                        }
-//                        $dis_out[] = implode(',', $dis_ou);
-//                    }
-//                }
-//                $date_book = implode(',', $dis_s);
-//
-//            } else {
-//                $date_book = "";
-//
-//            }
-//            $nam = Rooms::where('id', $id)->value('title');
-//            return view('schedule.schedule')->with(['date_book' => $date_book, 'id' => $id, 'name_room' => $nam]);
+            TableCost::where('obj_id', $request->room)->update(['date_book' => $in_table]);
+            return redirect()->action('ScheduleController@add', ['id' => $request->id]);
 
         }
+    }
+
+    public static function getBusyDates(int $idObj)
+    {
+        // Формирование данных для добавления новых цен за сутки
+        // С использованием календаря для выбора нескольких дат
+        $schedule = TableCost::where('obj_id', $idObj)->value('date_book'); // Получили все занятые дни для календаря
+        // Если есть цены, то формируем массив занятых дат для календаря
+        if (isset($schedule)) {
+            $date_b = explode(',', $schedule);
+            $busyDates = [];
+            foreach ($date_b as $res) {
+                $date = explode('/', $res);
+                $busyDates[] = date("Y-m-d", strtotime($date[0]));
+            }
+            $date_book = implode(',', $busyDates);
+
+        } else {
+            $date_book = "";
+        }
+        return $date_book;
     }
 
     public function edit(Request $request)

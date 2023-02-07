@@ -25,7 +25,6 @@ Route::get('/error_book', 'CalendarController@comeErrorBlade')->name('error.book
 Route::get('/reports_partner', 'PartnerController@view')->middleware('partner&admin')->name('reports.partner');
 
 Route::get('/danke', 'DankeController@view');
-
 Route::post('/search_room', 'SearchController@searchRoom')->name('search.room');
 
 Route::get('/reports', 'ReportController@view')->name('reports')->middleware('admin');

@@ -19,6 +19,9 @@ class SearchController extends Controller
     {
         // Поиск объектов по дате и количеству человек
 
+        $request->validate([
+            'date_book' => 'required'
+        ]);
         $request->session()->put('date_book', $request->date_book);// Добавиди дату в сессию
         $request->session()->save();
         $request->session()->put('people', $request->people); // Добавили количество человек в сессию

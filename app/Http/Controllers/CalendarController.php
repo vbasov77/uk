@@ -6,6 +6,7 @@ use App\Mail\NewBooking;
 use App\Mail\SendBooking;
 use App\Models\Booking;
 use App\Models\Schedule;
+use App\Models\TableCost;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Mail;
@@ -137,18 +138,23 @@ class CalendarController extends Controller
 
     public function setInfo(Request $request)
     {
-
+        // Валидация введённых данных клиентом
         $request->validate([
             'date_book' => 'required'
         ]);
 
         //Определение и подсчёт стоимости за каждый выбранный день
-        $array_rooms = Schedule::where('room', $request->id)->get(); // Достали инфу стоимости всех дат по id объекта из BD
+        $arrayDateCost = TableCost::where('obj_id', $request->id)->value('date_book'); // Достали инфу стоимости всех дат по id объекта из BD
 
         //Формируем индексный массив дат из БД
-        $array_date = [];
-        foreach ($array_rooms as $value) {
-            $array_date[] = $value->date_book;
+        $arrayDate = [];
+        if (isset($arrayDateCost)) {
+            $arrayDateCost = explode(',', $arrayDateCost);
+            $arrayDate = [];
+            foreach ($arrayDateCost as $value) {
+                $date = explode('/', $value);
+                $arrayDate[] = strtotime($date[0]);
+            }
         }
 
         // Формируем массив диапазона выбранных дат клиентом для определения стоимости
@@ -160,28 +166,31 @@ class CalendarController extends Controller
         // Определение стоимости по датам
         $sum_night = count($arr_date); // Количество ночей
         $date_view = [];
+        $sumCost = 0;
         foreach ($arr_date as $item) {
-            // проверка есть ли в массиве, если да, то дастаём стоимости даты из массива $array_rooms
+            // проверка есть ли в массиве, если да, то дастаём стоимости даты из массива $arrayDate
             // Если выбранной даты нет в массиве, то отправляем сообщение, что админом не заполнена одна из дат.
-            if (!empty(in_array($item, $array_date))) {
-                foreach ($array_rooms as $room) {
-                    if ($room->date_book == $item) {
-                        $cumm_cost = $room->cost; // Стоимость за ночь
-                        $date_view[] = $item . "/" . $cumm_cost; // Строка дата/стоимость для вывода информации пользователю
-                        $cost[] = $cumm_cost;
+
+            if (!empty(in_array(strtotime($item), $arrayDate))) {
+                foreach ($arrayDateCost as $dateCost) {
+                    $date = explode('/', $dateCost);
+                    if (strtotime($date[0]) == strtotime($item)) {
+                        $cost = (int)$date[1]; // Стоимость за ночь
+                        $date_view[] = $item . "/" . $cost; // Строка дата/стоимость для вывода информации пользователю
+                        $sumCost += $cost;
                     }
                 }
             } else {
                 return view('sorry.sorry');
             }
         }
-        $sum = array_sum($cost);
         $data = $_POST;
-        return view('orders.order_info', ['data' => $data, 'date_view' => $date_view, 'sum' => $sum, 'sum_night' => $sum_night]);
+        return view('orders.order_info', ['data' => $data, 'date_view' => $date_view, 'sum' => $sumCost, 'sum_night' => $sum_night]);
 
     }
 
-    public function comeErrorBlade()
+    public
+    function comeErrorBlade()
     {
         return view('errors.error_book');
     }
