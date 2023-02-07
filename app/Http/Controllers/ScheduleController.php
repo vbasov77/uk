@@ -41,49 +41,49 @@ class ScheduleController extends Controller
 
         // этот код выполнится, если используется метод POST
         if ($request->isMethod('post')) {
-            $dates_book = preg_replace("/\s+/", "", $request->date_book);// удалили пробелы
-            $dates_book_arr = explode('-', $dates_book);// Преобразовали в массив
-            $dates_arr = DateController::getDates($dates_book_arr[0], $dates_book_arr[1]);// Получили промежуточные даты
-            // Присвоим цену каждой дате
-            $arr = [];
-            foreach ($dates_arr as $value) {
-                $arr[] = $value . "/" . $request->cost;
+            $datesBook = preg_replace("/\s+/", "", $request->date_book);// удалили пробелы
+            $datesBookArr = explode('-', $datesBook);// Преобразовали в массив
+            $datesArr = [];
+            $datesArr[] = $datesBookArr[0];
+            $datesArray = DateController::getDates($datesBookArr[0], $datesBookArr[1]);// Получили промежуточные даты
+            foreach ($datesArray as $str) {
+                $datesArr[] = $str;
             }
-            $array = implode(',', $arr);
-            $db_book = TableCost::where('obj_id', $request->room)->get();
-            $table_arr_book = []; // Массив дат из BD
-            foreach ($db_book as $item) {
-                $dat_arr = explode(',', $item->date_book);
-                $table_arr_book[] = $dat_arr;
-            }
-            $table_arr_book = Arr::collapse($table_arr_book); // Перевели из ёмногомерного в индексный
-            // Сольём два полученных массива новых дат и дат из BD в один индексный $arr и $table_arr_book
-//            $table_arr_book = Arr::collapse($table_arr_book);
-            $all_dates_arr = [];
-            $all_dates_arr = $arr;
-            $all_dates_arr = $table_arr_book;
-            //Отделим даты от цен
-            foreach ($all_dates_arr as $ar) {
-                $only = explode('/', $ar);
-                $only_dates[] = strtotime($only[0]);
-            }
-            // Ранжировка дат по порядку
-            sort($only_dates);
-            $only_dates = array_unique($only_dates); // Удалили повторы из массива
-            // Формируем массив из дат и цен с делиметром "/"
+            $datesArr[] = $datesBookArr[1];
 
-            foreach ($only_dates as $da) {
-                foreach ($all_dates_arr as $all) {
-                    $a = explode('/', $all);
-                    if ($da == strtotime($a[0])) {
-                        $in[] = $a[0] . '/' . $a[1];
-                        break;
+            $oldStrDateAndCost = TableCost::where('obj_id', $request->room)->value('date_book');
+            // Получили все данные дат и стоимости из БД
+
+            $oldStrDateAndCost = explode(',', $oldStrDateAndCost);
+            //Разбили на массив полученные данные
+
+            // Создадим массив из одних дат
+            $arrOnlyDate = [];
+            foreach ($oldStrDateAndCost as $value) {
+                $date = explode('/', $value);
+                $arrOnlyDate[] = strtotime($date[0]);
+            }
+
+            // Перебираем новый массив. Если даты нет в массиве, то записываем строку в массив $oldStrDateAndCost
+            for ($i = 0; $i < count($datesArr); $i++) {
+                if (empty(in_array(strtotime($datesArr[$i]), $arrOnlyDate))) {
+                    $oldStrDateAndCost[] = $datesArr[$i] . '/' . $request->cost;
+                }
+                //Если есть такая строка, то заменяем её с новой ценой
+                if (!empty(in_array(strtotime($datesArr[$i]), $arrOnlyDate))) {
+                    foreach ($datesArr as $item) {
+                        for ($q = 0; $q < count($oldStrDateAndCost); $q++) {
+                            $dat = strtotime(explode('/', $oldStrDateAndCost[$q]));
+                            if ($dat == strtotime($item)) {
+                                $oldStrDateAndCost[$q] = $item . '/' . $request->cost;
+                            }
+                        }
                     }
                 }
             }
-            $in_table = implode(',', $in);
-            TableCost::where('obj_id', $request->room)->update(['date_book' => $in_table]);
-            return redirect()->action('ScheduleController@add', ['id' => $request->id]);
+            $inTable = implode(',', $oldStrDateAndCost);
+            TableCost::where('obj_id', $request->room)->update(['date_book' => $inTable]);
+            return redirect()->action('ScheduleController@add', ['id' => $request->room]);
 
         }
     }
